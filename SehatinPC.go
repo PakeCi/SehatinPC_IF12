@@ -717,9 +717,6 @@ func outputDataUserFormat(data *dataBase, i int) {
 }
 
 func binarySearch(data dataBase, searchData float64, totalUser, id int)int{
-	//id yang dicari : 1. rataCpuTemp, 2. rataGpuTemp, 3. rataRamTemp, 4. medCpuTemp, 5. medGpuTemp, 6. medRamTemp
-	// 7. modCpuTemp, 8. modGpuTemp, 9. modRamTemp, 10. minCpuTemp, 11. minGpuTemp, 12. minRamTemp,
-	// 13. maxCpuTemp, 14. maxGpuTemp, 15. maxRamTemp, 16. ramCapacity, 17. ramUsed, 18. diskCapacity, 19.diskUsed 
 	var right, left, middle int
 	selectionSort(&data, totalUser, id)
 
@@ -727,9 +724,9 @@ func binarySearch(data dataBase, searchData float64, totalUser, id int)int{
 	left = 0 
 	for left < right {
 		middle = (right + left)/2
-		if data[middle].rataCpuTemp > searchData {
+		if data[middle].indexFloat(id) > searchData {
 			right = middle - 1
-		}else if data[middle].rataCpuTemp < searchData {
+		}else if data[middle].indexFloat(id) < searchData {
 			left = middle + 1 
 		}else {
 			return middle
@@ -739,130 +736,79 @@ func binarySearch(data dataBase, searchData float64, totalUser, id int)int{
 }
 
 func selectionSort(data *dataBase, totalUser, id int) {
-	//id yang dicari : 1. rataCpuTemp, 2. rataGpuTemp, 3. rataRamTemp, 4. medCpuTemp, 5. medGpuTemp, 6. medRamTemp
-	// 7. modCpuTemp, 8. modGpuTemp, 9. modRamTemp, 10. minCpuTemp, 11. minGpuTemp, 12. minRamTemp,
-	// 13. maxCpuTemp, 14. maxGpuTemp, 15. maxRamTemp, 16. ramCapacity, 17. ramUsed, 18. diskCapacity, 19.diskUsed 
 	var idx int
 	var temp dataComponent 	
 	for i := 1; i < totalUser; i++ {
 		idx = i
 		temp = data[i]
 		for y := i+1; y < totalUser; y++ {
-			switch id {
-			case 1:
-				if data[y].rataCpuTemp < data[idx].rataCpuTemp {
-					idx = y
-				}
-			case 2:
-				if data[y].rataGpuTemp < data[idx].rataGpuTemp {
-					idx = y
-				}
-			case 3:
-				if data[y].rataRamTemp < data[idx].rataRamTemp {
-					idx = y
-				}
-			case 4:
-				if data[y].medCpuTemp < data[idx].medCpuTemp {
-					idx = y
-				}
-			case 5:
-				if data[y].medGpuTemp < data[idx].medGpuTemp {
-					idx = y
-				}
-			case 6:
-				if data[y].medRamTemp < data[idx].medRamTemp {
-					idx = y
-				}
-			case 7:
-				if data[y].modCpuTemp < data[idx].modCpuTemp {
-					idx = y
-				}
-			case 8:
-				if data[y].modGpuTemp < data[idx].modGpuTemp {
-					idx = y
-				}
-			case 9:
-				if data[y].modRamTemp < data[idx].modRamTemp {
-					idx = y
-				}
-			case 10:
-				if data[y].minCpuTemp < data[idx].minCpuTemp {
-					idx = y
-				}
-			case 11:
-				if data[y].minGpuTemp < data[idx].minGpuTemp {
-					idx = y
-				}
-			case 12:
-				if data[y].minRamTemp < data[idx].minRamTemp {
-					idx = y
-				}
-			case 13:
-				if data[y].maxCpuTemp < data[idx].maxCpuTemp {
-					idx = y
-				}
-			case 14:
-				if data[y].maxGpuTemp < data[idx].maxGpuTemp {
-					idx = y
-				}
-			case 15:
-				if data[y].maxRamTemp < data[idx].maxRamTemp {
-					idx = y
-				}
-			case 16: 
-				if data[y].ramCapacity < data[idx].ramCapacity {
-					idx = y
-				}
-			case 17:
-				if data[y].ramUsed < data[idx].ramUsed {
-					idx = y
-				}
-			case 18:
-				if data[y].diskCapacity < data[idx].diskCapacity {
-					idx = y
-				}
-			case 19:
-				if data[y].diskUsed < data[idx].diskUsed {
-					idx = y
-				}
+			if data[y].indexFloat(id) < data[idx].indexFloat(id) {
+				idx = y
 			}
 		}
 		data[i] = data[idx]
 		data[idx] = temp
+
 	}
 }
 
-// func setIndex(x dataComponent, index int)dataComponent{
-// 	switch index {
-// 	case 1:return x.rataCpuTemp 
-// 	case 2:return x.rataGpuTemp
-// 	case 3:return x.rataRamTemp
-// 	case 4:return x.medCpuTemp
-// 	case 5:return x.medGpuTemp
-// 	case 6:return x.medRamTemp
-// 	case 7:return x.modCpuTemp
-// 	case 8:return x.modGpuTemp
-// 	case 9:return x.modRamTemp
-// 	case 10:return x.minCpuTemp
-// 	case 11:return x.minGpuTemp
-// 	case 12:return x.minRamTemp
-// 	case 13:return x.maxCpuTemp
-// 	case 14:
-// 	case 15:
-// 	case 16:
-// 	case 17:
-// 	case 18:
-// 	case 19:
-// 	}
-// }
-
-func sequentialSearch(data dataBase, searchData string, totalUser int) {
-	//buat cari status atau yang lainnya berdasarkan string
+// https://go.dev/tour/methods/4 pake receiver biar ga banyak if else
+func (x dataComponent) indexFloat(idx int)float64{
+	//id yang dicari : 1. rataCpuTemp, 2. rataGpuTemp, 3. rataRamTemp, 4. medCpuTemp, 5. medGpuTemp, 6. medRamTemp
+	// 7. modCpuTemp, 8. modGpuTemp, 9. modRamTemp, 10. minCpuTemp, 11. minGpuTemp, 12. minRamTemp,
+	// 13. maxCpuTemp, 14. maxGpuTemp, 15. maxRamTemp, 16. ramCapacity, 17. ramUsed, 18. diskCapacity, 19.diskUsed 
 	
+	switch idx {
+	case 1:return x.rataCpuTemp
+	case 2:return x.rataGpuTemp
+	case 3:return x.rataRamTemp
+	case 4:return x.medCpuTemp
+	case 5:return x.medGpuTemp
+	case 6:return x.medRamTemp
+	case 7:return x.modCpuTemp
+	case 8:return x.modGpuTemp
+	case 9:return x.modRamTemp
+	case 10:return x.minCpuTemp
+	case 11:return x.minGpuTemp
+	case 12:return x.minRamTemp
+	case 13:return x.maxCpuTemp
+	case 14:return x.maxGpuTemp
+	case 15:return x.maxRamTemp
+	case 16:return x.ramCapacity
+	case 17:return x.ramUsed
+	case 18:return x.diskCapacity
+	case 19:return x.diskUsed
+	default: return 0
+	}
+}
+
+func (x dataComponent) indexString(idx int)string {
+	// id yang dicari : 1. cpuManufacturer, 2. gpuManufacturer, 3. cpuModel, 4.gpuModel, 5. cpuSerial, 6. gpuSerial
+	// 7. OperatingSystem, 8. Status
+	switch idx {
+	case 1:return x.cpuManufacturer 
+	case 2:return x.gpuManufacturer
+	case 3:return x.cpuModel
+	case 4:return x.gpuModel
+	case 5:return x.cpuSerial
+	case 6:return x.gpuSerial
+	case 7:return x.operatingSystem
+	case 8:return x.status
+	default: return ""
+	}
+}
+
+func sequentialSearch(data dataBase, searchData string, totalUser, id int){
+	//buat cari status atau yang lainnya berdasarkan string
+	for i := 1; i < totalUser; i++ {
+		if data[i].indexString(id) == searchData {
+			fmt.Printf("User %d: %s with data: ", i, data[i].user, data[i].indexString(id))
+		}
+	}
 }
 
 func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
-
+	
 }
 
 func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
