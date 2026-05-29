@@ -20,9 +20,25 @@ Disini kami membuat sistem seperti berikut :
 > di dalam program, akan diberikan beberapa menu, yakni untuk menginput data, dan jika user baru pertama kali masuk, yang hanya bisa diakses adalah page input data, namun jika sudah menginput data, dan datanya sudah ada di database user bisa melanjutkan ke menu yang lain. Dalam input data, pertama user akan menginput beberapa data  yakni serialCode laptop, cpuManufacturer, gpuManufacturer, cpuModel, dan gpuModel, ramCapacity, diskCapacity serta lastMaintenanceDate. yang kemudian akan ada continue dan back, jika back dia masih tidak bisa mengakses menu lain sebelum data diisi, namun ketika continue user akan di bawa ke page untuk menginput data lanjutan yang dimana user akan diminta menginput cpuTemperatur, gpuTemperatur, ramTemperatur yang masing-masing menginput 10 data dalam 20 detik terakhir (soalnya di btop pergantian data setiap 2 detik) untuk mencari rata-rata, median, min, max dan modus dari temperature. Ketika sudah mendapatkan rata-rata, median, dan modus program akan memasukkan datanya ke array dataComponent sebagai rataCpuTemp, medCpuTemp, modCpuTemp. yang user juga akan diminta mengisi data ramUsed, diskUsed, dataLoad, dan operatingSystem sistem akan menanyakan apakah data tersebut dalam heavy load atau normal load. dan beberapa variabel seperti cpuManufacturer, gpuManufacturer, cpuModel, gpuModel, operatingSystem, dan dataLoad akan mempengaruhi bagaimana pemrosesan data supaya dianggap lag atau overheat.
 
 > Spesifikasi : 
-    Untuk dinyatakan overheat : 
+    Untuk CPU dinyatakan overheat : 
     1. Intel : 
         Pentium : HeavyLoad >= 85, Idle >= 70
         Xeon : HeavyLoad >= 95, Idle >= 80
         Atom : HeavyLoad >= 80, Idle >= 65
-    2. Amd : 
+        Core : HeavyLoad >= 100, Idle >= 90
+    2. Amd :
+        Ryzen : HeavyLoad >=  95, Idle >= 70
+        Epyc : HeavyLoad >= 95, Idle >= 85
+        Athlon : HeavyLoad >= 80, Idle >= 65
+    3. Apple :
+        M : HeavyLoad >= 95, Idle >= 70
+
+    Untuk GPU dinyatakan overheat : 
+    1. NVIDIA : 
+        
+    2. AMD : 
+
+    3. Apple :
+
+    Untuk RAM dinyatakan overheat : 
+    HeavyLoad >= 85, Idle >= 70

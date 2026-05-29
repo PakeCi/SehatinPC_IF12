@@ -436,10 +436,13 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	for i = 0; i < 10; i++ {
 		fmt.Scan(&cpuTemperature[i])
 	}
-	fmt.Print("Input 10 of your current GPU Temperature in the last 20 seconds: ")
-	for i = 0; i < 10; i++ {
-		fmt.Scan(&gpuTemperature[i])
+	if gpuManufacturer != "NONE" {
+		fmt.Print("Input 10 of your current GPU Temperature in the last 20 seconds: ")
+		for i = 0; i < 10; i++ {
+			fmt.Scan(&gpuTemperature[i])
+		}
 	}
+
 	fmt.Print("Input 10 of your current RAM Temperature in the last 20 seconds: ")
 	for i = 0; i < 10; i++ {
 		fmt.Scan(&ramTemperature[i])
@@ -546,6 +549,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			data[loggedInUser].maxRamTemp = max
 			data[loggedInUser].ramUsed = ramUsage
 			data[loggedInUser].diskUsed = diskUsage
+			setData(data, loggedInUser)
 
 			valid2 = true
 		case 2:
@@ -684,7 +688,11 @@ func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%s %d%-19s%s %s\n", "User", i, "", ":", data[i].user)
 	fmt.Printf("%-25s %s %s\n", "Serial Code", ":", data[i].serialCode)
 	fmt.Printf("%-25s %s %s %s %s\n", "CPU", ":", data[i].cpuManufacturer, data[i].cpuModel, data[i].cpuSerial)
-	fmt.Printf("%-25s %s %s %s %s\n", "GPU", ":", data[i].gpuManufacturer, data[i].gpuModel, data[i].gpuSerial)
+
+	if data[i].gpuManufacturer != "NONE" {
+		fmt.Printf("%-25s %s %s %s %s\n", "GPU", ":", data[i].gpuManufacturer, data[i].gpuModel, data[i].gpuSerial)
+	}
+
 	fmt.Printf("%-25s %s %.2f%%\n", "Battery Health", ":", data[i].batteryHealth)
 	fmt.Printf("%-25s %s %s\n", "Operating System", ":", data[i].operatingSystem)
 
@@ -695,10 +703,12 @@ func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%-25s %s %.2f°C\n", "Median CPU Temperature", ":", data[i].medCpuTemp)
 	fmt.Printf("%-25s %s %.2f°C\n", "Modus CPU Temperature", ":", data[i].modCpuTemp)
 
-	fmt.Printf("\nGPU SPEC: \n")
-	fmt.Printf("%-25s %s %.2f°C\n", "Average GPU Temperature", ":", data[i].rataGpuTemp)
-	fmt.Printf("%-25s %s %.2f°C\n", "Median GPU Temperature", ":", data[i].medGpuTemp)
-	fmt.Printf("%-25s %s %.2f°C\n", "Modus GPU Temperature", ":", data[i].modGpuTemp)
+	if data[i].gpuManufacturer != "NONE" {
+		fmt.Printf("\nGPU SPEC: \n")
+		fmt.Printf("%-25s %s %.2f°C\n", "Average GPU Temperature", ":", data[i].rataGpuTemp)
+		fmt.Printf("%-25s %s %.2f°C\n", "Median GPU Temperature", ":", data[i].medGpuTemp)
+		fmt.Printf("%-25s %s %.2f°C\n", "Modus GPU Temperature", ":", data[i].modGpuTemp)
+	}
 
 	fmt.Printf("\nRAM SPEC: \n")
 	fmt.Printf("%-25s %s %.2f GiB\n", "RAM Capacity", ":", data[i].ramCapacity)
@@ -719,11 +729,11 @@ func outputDataUserFormat(data *dataBase, i int) {
 	footer()
 }
 
-func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) {
+func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) int {
 	var right, left, middle int
-	var dataCopy dataBase
+	// var dataCopy dataBase
 
-	selectionSort(&data, *totalUser, id)
+	selectionSort(data, *totalUser, id)
 
 	right = *totalUser - 1
 	left = 0
@@ -855,7 +865,15 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			fmt.Scan(&input)
 			switch input {
 			case 1:
-
+				var confirmation string
+				fmt.Println("Are you sure about that? note : ALL of your data will be gone in a blink of an eye.")
+				footer()
+				fmt.Print("Input (YES/NO): ")
+				fmt.Scan(&confirmation)
+				if upperCaseConverter(confirmation) == "YES" {
+					deletion(data, loggedInUser, totalUser, 1)
+					exit = true
+				}
 			case 2: //exit
 				exit = true
 			case 3: //kill
@@ -881,7 +899,7 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 		fmt.Print("Input: ")
 		fmt.Scan(&input)
 		switch input {
-		case 1: // search + show
+		case 1: //show all data with specific thing
 			for !valid {
 				fmt.Scan(&searchType)
 				if searchType >= 1 && searchType <= 27 {
@@ -905,9 +923,17 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 				fmt.Scan(&searchDataS)
 				sequentialSearch(data, searchDataS, totalUser, searchType-19)
 			}
-		case 2:
-
-		case 3:
+		case 2: //delete user data
+			var deleteIndex int
+			for !valid {
+				fmt.Print("Which user's data do you want to delete: ")
+				fmt.Scan(&deleteIndex)
+				if deleteIndex < totalUser && deleteIndex > 0 {
+					deletion(data, deleteIndex, totalUser, 1)
+					valid = true
+				}
+			}
+		case 3: //delete user
 
 		case 4: //exit
 			exit = true
@@ -921,8 +947,24 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 	}
 }
 
-func deletion(data *dataBase, loggedInUser int, totalUser *int) {
+func deletion(data *dataBase, loggedInUser int, totalUser *int, id int) {
+	tempUser := data[loggedInUser].user
+	tempPassword := data[loggedInUser].userPassword
 
+	switch id {
+	case 1: //only delete data User
+		data[loggedInUser] = dataComponent{}
+		data[loggedInUser].user = tempUser
+		data[loggedInUser].userPassword = tempPassword
+		data[loggedInUser].dataSudahDiisi = false
+	case 2: //delete User (admin only)
+		for i := loggedInUser; i < *totalUser-1; i++ {
+			data[i] = data[i+1]
+		}
+		data[*totalUser-1] = dataComponent{}
+		*totalUser--
+	}
+	fmt.Println("Data Sucessfuly Deleted")
 }
 
 //why the fuck did i make ts so fucking complicated AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -941,8 +983,106 @@ func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 
 }
 
-func setData(OS, cpuManufacturer, cpuModel string, cpuOverheat, gpuOverheat, ramOverheat bool) {
+func setData(data *dataBase, loggedInUser int) {
+	var cpuOverheat bool = false
+	var gpuOverheat bool = false
+	var ramOverheat bool = false
+	var sisaAvailableRam, sisaAvailableDisk float64
 
+	nextMaintenance = data[loggedInUser].lastMaintenanceDate
+	if data[loggedInUser].cpuManufacturer == "INTEL" {
+		if data[loggedInUser].cpuModel == "PENTIUM" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 85) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 70) {
+				cpuOverheat = true
+			}
+		} else if data[loggedInUser].cpuModel == "XEON" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 95) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 80) {
+				cpuOverheat = true
+			}
+		} else if data[loggedInUser].cpuModel == "ATOM" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 80) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 65) {
+				cpuOverheat = true
+			}
+		} else {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 100) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 90) {
+				cpuOverheat = true
+			}
+		}
+	} else if data[loggedInUser].cpuManufacturer == "AMD" {
+		if data[loggedInUser].cpuModel == "RYZEN" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 95) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 70) {
+				cpuOverheat = true
+			}
+		} else if data[loggedInUser].cpuModel == "EPYC" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 95) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 85) {
+				cpuOverheat = true
+			}
+		} else {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 80) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 65) {
+				cpuOverheat = true
+			}
+		}
+	} else if data[loggedInUser].cpuManufacturer == "APPLE" {
+		if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 95) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 70) {
+			cpuOverheat = true
+		}
+	}
 
+	if data[loggedInUser].gpuManufacturer != "NONE" {
+		if data[loggedInUser].gpuManufacturer == "NVIDIA" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 85) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 70) {
+				gpuOverheat = true
+			}
+		} else if data[loggedInUser].gpuManufacturer == "AMD" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 90) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 75) {
+				gpuOverheat = true
+			}
+		} else if data[loggedInUser].gpuManufacturer == "APPLE" {
+			if (data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 95) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 75) {
+				gpuOverheat = true
+			}
+		}
+	}
+
+	if (data[loggedInUser].dataLoad && data[loggedInUser].rataRamTemp >= 85) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataRamTemp >= 70) {
+		ramOverheat = true
+	}
+
+	// var diskUsageByOS, ramUsageByOS float64
+	var minimumDiskAvailable, minimumRamAvailable float64
+
+	if data[loggedInUser].operatingSystem == "WINDOWS" {
+		// ramUsageByOS = 0.35 *data[loggedInUser].ramCapacity
+		// diskUsageByOS = 64
+		minimumRamAvailable = 0.15 * data[loggedInUser].ramCapacity
+		minimumDiskAvailable = 0.15 * data[loggedInUser].diskCapacity //%
+	} else if data[loggedInUser].operatingSystem == "MACOS" {
+		// ramUsageByOS = 0.2 * data[loggedInUser].ramCapacity //%
+		// diskUsageByOS = 25
+		minimumRamAvailable = 0.15 * data[loggedInUser].ramCapacity
+		minimumDiskAvailable = 0.1 * data[loggedInUser].diskCapacity //%
+	} else {
+		// ramUsageByOS = 0.1 * data[loggedInUser].ramCapacity //%
+		// diskUsageByOS = 20
+		minimumRamAvailable = 0.05 * data[loggedInUser].ramCapacity
+		minimumDiskAvailable = 0.15 * data[loggedInUser].diskCapacity //%
+	}
+
+	sisaAvailableRam = data[loggedInUser].ramCapacity - data[loggedInUser].ramUsed
+	sisaAvailableDisk = data[loggedInUser].diskCapacity - data[loggedInUser].diskUsed
+
+	var lowOnDisk, lowOnRam bool
+
+	lowOnRam = sisaAvailableRam < minimumRamAvailable
+	lowOnDisk = sisaAvailableDisk < minimumDiskAvailable
+
+	if cpuOverheat && gpuOverheat && ramOverheat {
+		data[loggedInUser].status = "VERY_CRITICAL"
+	} else if cpuOverheat || gpuOverheat || ramOverheat {
+		data[loggedInUser].status = "CRITICAL"
+	} else if lowOnDisk || lowOnRam {
+		data[loggedInUser].status = "WARNING"
+	} else {
+		data[loggedInUser].status = "GUD"
+	}
 }
-
