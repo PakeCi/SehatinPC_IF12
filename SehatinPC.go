@@ -652,7 +652,7 @@ func checkValidityInput(x string, i int, y string) bool {
 		}
 	} else if i == 6 {
 		//formatnya DD-MM-YYYY
-		if len(x) != 10 && (x[0] < '0' || x[0] > '3') && (x[1] < '0' || x[1] > '9') && (x[3] < '0' || x[3] > '1') && (x[4] < '0' || x[4] > '9') && (x[6] < '0' || x[6] > '9') && (x[7] < '0' || x[7] > '9') && (x[8] < '0' || x[8] > '9') && (x[9] < '0' || x[9] > '9') && x[2] != '-' && x[5] != '-' {
+		if len(x) != 10 || ((x[0] < '0' || x[0] > '3') || (x[1] < '0' || x[1] > '9') || (x[3] < '0' || x[3] > '1') || (x[4] < '0' || x[4] > '9') || (x[6] < '0' || x[6] > '9') || (x[7] < '0' || x[7] > '9') || (x[8] < '0' || x[8] > '9') || (x[9] < '0' || x[9] > '9') || x[2] != '-' || x[5] != '-') {
 			return false
 		}
 	} else if i == 7 {
@@ -765,12 +765,13 @@ func outputDataUserFormat(data *dataBase, i int) {
 	footer()
 }
 
-func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) int {
+func binarySearch(data *dataBase, searchData float64, totalUser *int, id int, batasKanan, batasKiri *int) {
 	var right, left, middle int
 	// var dataCopy dataBase
-
+	// ini buat float64
 	selectionSort(data, *totalUser, id)
-
+	*batasKiri = -1
+	*batasKanan = -1
 	right = *totalUser - 1
 	left = 1
 	for left < right {
@@ -780,10 +781,22 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) in
 		} else if data[middle].indexFloat(id) < searchData {
 			left = middle + 1
 		} else {
-			return middle
+			*batasKiri = middle
+			*batasKanan = middle
+			left = right + 1
 		}
 	}
-	return -1
+
+	if *batasKiri != -1 && *batasKanan != -1 {
+
+	for (data[*batasKiri].indexFloat(id) == searchData && *batasKiri >= 1) {
+		*batasKiri = *batasKiri - 1
+	}
+	
+	for (data[*batasKanan].indexFloat(id) == searchData && *batasKanan < *totalUser) {
+		*batasKanan = *batasKanan + 1
+	}
+	}
 }
 
 func selectionSort(data *dataBase, totalUser, id int) {
@@ -855,7 +868,7 @@ func jenisSorting() bool {
 	var input int
 	var valid bool = false
 	var ascending bool
-	fmt.Printf("%-45s%s\n%-45s%s\n", "1. Ascending", "2. Descending")
+	fmt.Printf("%-45s%s\n%-45s%s\n","", "1. Ascending","", "2. Descending")
 	footer()
 	for !valid {
 		fmt.Print("Input: ")
@@ -999,7 +1012,7 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 	var input int
 	var exit bool = false
 	var valid bool = false
-	var searchType, index int
+	var searchType int
 	var searchDataF float64
 	var searchDataS string
 
@@ -1026,14 +1039,10 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 			if searchType >= 1 && searchType <= 19 {
 				fmt.Print("Data: ")
 				fmt.Scan(&searchDataF)
-				index = binarySearch(data, searchDataF, totalUser, searchType)
-
-				for data[index-1].indexFloat(searchType) == searchDataF {
-					fmt.Printf("User %d: %s with data: %.2f\n ", index, data[index].user, data[index].indexFloat(searchType))
-					index = index - 1
-				}
-				for data[index+1].indexFloat(searchType) == searchDataF {
-					fmt.Printf("User %d: %s with data: %.2f\n", index, data[index].user, data[index].indexFloat(searchType))
+				var batasKanan, batasKiri int
+				binarySearch(data, searchDataF, totalUser, searchType, &batasKanan, &batasKiri)
+				for i := batasKiri + 1; i < batasKanan; i++ {
+					fmt.Printf("User %d: %s with data: %.2f \n", i, data[i].user, data[i].indexFloat(searchType))
 				}
 			} else {
 				fmt.Print("Data: ")
@@ -1099,7 +1108,7 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 	fmt.Printf("\n%-44s%s\n", "", "STATISTIC MENU")
 	if loggedInUser == 0 {
 		fmt.Printf("%-19s%s\n", " ", "1. Show component status (all users)")
-		fmt.Printf("%-19s%s\n", " ", "2. Show average temperatures (all users)")
+		fmt.Printf("%-19s%s\n", " ", "2. Show temperature statistics (all users)")
 		fmt.Printf("%-19s%s\n", " ", "3. Sort users by CPU temp")  //selection Sort
 		fmt.Printf("%-19s%s\n", " ", "4. Sort users by GPU temp")  //selection Sort
 		fmt.Printf("%-19s%s\n", " ", "5. Sort users by RAM temp")  //Insertion sort
@@ -1205,31 +1214,148 @@ func showUserStatus(data *dataBase, totalUser *int){
 }
 
 func showAverageTemp(data *dataBase, totalUser *int) {
-
+	var countCpu, countGpu, countRam int
+	var totalCpuTemp, totalGpuTemp, totalRamTemp float64
+	for i := 1; i < *totalUser; i++ {
+		fmt.Printf("\nUser %d: %s\n", i, data[i].user)
+		fmt.Printf("%-2sAverage CPU Temperature: %.2f°C\n", "", data[i].rataCpuTemp)
+		totalCpuTemp = totalCpuTemp + data[i].rataCpuTemp
+		countCpu++
+		if data[i].gpuManufacturer != "NONE" {
+			totalGpuTemp = totalGpuTemp + data[i].rataGpuTemp
+			countGpu++
+		}
+		totalRamTemp = totalRamTemp + data[i].rataRamTemp
+		countRam++
+	}
+	fmt.Printf("\n%-36s%s\n\n", "", "AVERAGE TEMPERATURE STATISTICS")
+	if countCpu > 0 {
+		fmt.Printf("%-20s: %.2f°C\n", "Average CPU Temperature", totalCpuTemp/float64(countCpu))
+	}else {
+		fmt.Printf("%-20s: %s\n", "Average CPU Temperature", "Data Unavailable")
+	}
+	if countGpu > 0 {
+		fmt.Printf("%-20s: %.2f°C\n", "Average GPU Temperature", totalGpuTemp/float64(countGpu))
+	} else {
+		fmt.Printf("%-20s: %s\n", "Average GPU Temperature", "Data Unavailable")
+	}
+	if countRam > 0 {
+		fmt.Printf("%-20s: %.2f°C\n", "Average RAM Temperature", totalRamTemp/float64(countRam))
+	} else {
+		fmt.Printf("%-20s: %s\n", "Average RAM Temperature", "Data Unavailable")
+	}
+	footer()
 }
 
 func showSortedCpuTemp(data *dataBase, totalUser *int) {
-
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	} else {
+		var ascending bool = jenisSorting()
+		if ascending {
+			selectionSort(data, *totalUser, 1)
+		} else {
+			selectionSortDesc(data, *totalUser, 1)
+		}
+		for i := 1; i < *totalUser; i++ {
+			fmt.Printf("User %d: %s with Average CPU Temperature: %.2f°C\n", i, data[i].user, data[i].rataCpuTemp)
+		}
+	}
+	footer()
 }
 
 func showSortedGpuTemp(data *dataBase, totalUser *int) {
-
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	} else {
+		var ascending bool = jenisSorting()
+		if ascending {
+			selectionSort(data, *totalUser, 2)
+		} else {
+			selectionSortDesc(data, *totalUser, 2)
+		}
+		for i := 1; i < *totalUser; i++ {
+			if data[i].gpuManufacturer != "NONE" {
+				fmt.Printf("User %d: %s with Average GPU Temperature: %.2f°C\n", i, data[i].user, data[i].rataGpuTemp)
+			}
+		}
+	}
+	footer()
 }
 
 func showSortedRamTemp(data *dataBase, totalUser *int) {
-
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	} else {
+		var ascending bool = jenisSorting()
+		if ascending {
+			insertionSortData(data, *totalUser, 3)
+		} else {
+			insertionSortDataDesc(data, *totalUser, 3)
+		}
+		for i := 1; i < *totalUser; i++ {
+			if data[i].dataSudahDiisi {
+				fmt.Printf("User %d: %s with Average RAM Temperature: %.2f°C\n", i, data[i].user, data[i].rataRamTemp)
+			}
+		}
+	}
+	footer()
 }
-
+//gah damn dikit lg co 
 func searchUserStatus(data *dataBase, totalUser *int) {
-
+	var searchStatus string
+	// var input string
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	}else { 
+	fmt.Print("Input Status that you want to search:")
+	fmt.Scan(&searchStatus)
+	searchStatus = upperCaseConverter(searchStatus)
+	sequentialSearch(data, searchStatus, totalUser, 8)
+	}
 }
 
 func searchUserCpuTemp(data *dataBase, totalUser *int) {
-
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	}else {
+		var batasKiri, batasKanan int
+		var input float64
+		selectionSort(data, *totalUser, 1)
+		fmt.Print("Input CPU that you want to search: ")
+		fmt.Scan(&input)
+		binarySearch(data, input, totalUser, 1, &batasKanan, &batasKiri)
+		if batasKiri == -1 && batasKanan == -1 {
+			fmt.Println("No user data found with that CPU Temperature")
+		} else {
+			fmt.Printf("Users with Average CPU Temperature of %.2f°C:\n", input)
+			for i := batasKiri + 1; i < batasKanan; i++ {
+				fmt.Printf("User %d: %s\n", i, data[i].user)
+				fmt.Printf("%-2sAverage CPU Temperature: %.2f°C\n", "", data[i].rataCpuTemp)
+			}
+		}
+	}
+	footer()
 }
 
 func showUserTempStats(data *dataBase, loggedInUser int) {
-
+	fmt.Printf("\n%-40s%s\n\n", " ", "YOUR TEMPERATURE STATISTICS")
+	footer()
+	fmt.Printf("CPU:\n")
+	fmt.Printf("  Avg: %.2f°C  Median: %.2f°C  Mode: %.2f°C  Min: %.2f°C  Max: %.2f°C\n",
+		data[loggedInUser].rataCpuTemp, data[loggedInUser].medCpuTemp,
+		data[loggedInUser].modCpuTemp, data[loggedInUser].minCpuTemp, data[loggedInUser].maxCpuTemp)
+	if data[loggedInUser].gpuManufacturer != "NONE" {
+		fmt.Printf("GPU:\n")
+		fmt.Printf("  Avg: %.2f°C  Median: %.2f°C  Mode: %.2f°C  Min: %.2f°C  Max: %.2f°C\n",
+			data[loggedInUser].rataGpuTemp, data[loggedInUser].medGpuTemp,
+			data[loggedInUser].modGpuTemp, data[loggedInUser].minGpuTemp, data[loggedInUser].maxGpuTemp)
+	}
+	fmt.Printf("RAM:\n")
+	fmt.Printf("  Avg: %.2f°C  Median: %.2f°C  Mode: %.2f°C  Min: %.2f°C  Max: %.2f°C\n",
+		data[loggedInUser].rataRamTemp, data[loggedInUser].medRamTemp,
+		data[loggedInUser].modRamTemp, data[loggedInUser].minRamTemp, data[loggedInUser].maxRamTemp)
+	footer()
 }
 
 func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
@@ -1728,4 +1854,3 @@ func stringConverter(x int) string {
 	}
 	return hasil
 }
-
