@@ -225,6 +225,8 @@ func main() {
 	data[0].userPassword = "admin"
 	userIndex = 1
 
+	seedDummyData(&data, &userIndex)
+
 	for !exit {
 		if !login {
 			loginMenu(&data, &exit, &login, &userIndex, &firstOpenPage, &loggedInUser)
@@ -268,7 +270,11 @@ func mainMenu(data *dataBase, kill *bool, login *bool, totalUser *int, firstOpen
 					fmt.Printf("\n%-45s%s\n", " ", "ALL USER DATA")
 					for i := 1; i < *totalUser; i++ {
 						fmt.Printf("\nUser %d: %s\n", i, data[i].user)
-						fmt.Println()
+						if data[i].dataSudahDiisi {
+							fmt.Printf("%-2sStatus: %s\n", "", data[i].status)
+						} else {
+							fmt.Printf("%-2sStatus: Data unavailable\n", "")
+						}
 					}
 					footer()
 				}
@@ -347,8 +353,21 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	var isLaptop bool
 	var usingLaptop string
 
-	fmt.Printf("RULES : \n")
-	// nanti kutambahin rulesnya
+	fmt.Printf("RULES : \n  ")
+	fmt.Printf("%-20s: Intel | AMD | Apple\n  ", "CPU Manufacturer")
+	fmt.Printf("%-20s: Core | Pentium | Xeon | Atom\n  ", "CPU Model for Intel")
+	fmt.Printf("%-20s: Ryzen | Epyc | Athlon\n  ", "CPU Model for AMD")
+	fmt.Printf("%-20s: M (contoh: M1, M2...)\n  ", "CPU Model for Apple")
+	fmt.Printf("%-20s: NVIDIA | AMD | Apple | NONE\n  ", "GPU Manufacturer")
+	fmt.Printf("%-20s: RTX | GTX | MAX-Q\n  ", "GPU Model for NVIDIA")
+	fmt.Printf("%-20s: Radeon\n  ", "GPU Model for AMD")
+	fmt.Printf("%-20s: M (contoh: M1, M2...)\n  ", "GPU Model for Apple")
+	fmt.Printf("%-20s: Windows | Linux | MacOS\n\n", "Operating System")
+
+	fmt.Printf("FORMAT : \n  ")
+	fmt.Printf("%-20s: CPU Manufacturer Cpu Model Cpu Serial (contoh : Intel Core i7)\n  ", "CPU")
+	fmt.Printf("%-20s: GPU Manufacturer GPU Model GPU Serial (contoh : NVIDIA GTX 1650)\n", "GPU")
+	fmt.Printf("%-20s: DD-MM-YYYY\n", "Date Format")
 
 	footer()
 	fmt.Printf("\n%-45s%s\n\n", " ", "INPUT USER DATA (Page 1/2)")
@@ -367,6 +386,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			}
 		}
 	}
+
 	valid1 = false
 	for !valid1 {
 		fmt.Print("Serial Number: ")
@@ -409,7 +429,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 		if ramCapacity > 0 {
 			valid1 = true
 		} else {
-			fmt.Println("Insufficient Ram Space")
+			fmt.Println("Insufficient RAM Space")
 		}
 	}
 	valid1 = false
@@ -429,7 +449,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 		valid1 = checkValidityInput(lastMaintenance, 6, "")
 	}
 	footer()
-	fmt.Printf("RULES : \n")
+	// fmt.Printf("RULES : \n")
 	fmt.Printf("\n%-38s%s\n\n", " ", "INPUT USER DATA (Page 2/2)")
 	var i int
 	fmt.Print("Input 10 of your current CPU Temperature in the last 20 seconds: ")
@@ -485,6 +505,8 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			fmt.Scan(&batteryHealth)
 			if batteryHealth >= 0 && batteryHealth <= 100 {
 				valid2 = true
+			} else {
+				fmt.Println("Invalid input")
 			}
 		}
 		valid2 = false
@@ -507,9 +529,11 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	}
 	valid2 = false
 	footer()
+	fmt.Println("Type (1) to Save, Type (2) to Exit Menu, Type (3) to Logout, Type (4) to Kill Program")
+	footer()
 	var input int
 	for !valid2 {
-		fmt.Print("Type 1 to Save, Type 2 to Exit Menu, Type 3 to Logout, Type 4 to Kill Program")
+		fmt.Print("Input: ")
 		fmt.Scan(&input)
 		switch input {
 		case 1:
@@ -535,12 +559,20 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			data[loggedInUser].modCpuTemp = mod
 			data[loggedInUser].minCpuTemp = min
 			data[loggedInUser].maxCpuTemp = max
-			processData(&min, &max, &med, &mod, &avg, gpuTemperature)
-			data[loggedInUser].rataGpuTemp = avg
-			data[loggedInUser].medGpuTemp = med
-			data[loggedInUser].modGpuTemp = mod
-			data[loggedInUser].minGpuTemp = min
-			data[loggedInUser].maxGpuTemp = max
+			if upperCaseConverter(gpuManufacturer) != "NONE" {
+				processData(&min, &max, &med, &mod, &avg, gpuTemperature)
+				data[loggedInUser].rataGpuTemp = avg
+				data[loggedInUser].medGpuTemp = med
+				data[loggedInUser].modGpuTemp = mod
+				data[loggedInUser].minGpuTemp = min
+				data[loggedInUser].maxGpuTemp = max
+			} else {
+				data[loggedInUser].rataGpuTemp = -1
+				data[loggedInUser].medGpuTemp = -1
+				data[loggedInUser].modGpuTemp = -1
+				data[loggedInUser].minGpuTemp = -1
+				data[loggedInUser].maxGpuTemp = -1
+			}
 			processData(&min, &max, &med, &mod, &avg, ramTemperature)
 			data[loggedInUser].rataRamTemp = avg
 			data[loggedInUser].medRamTemp = med
@@ -550,7 +582,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			data[loggedInUser].ramUsed = ramUsage
 			data[loggedInUser].diskUsed = diskUsage
 			setData(data, loggedInUser)
-
+			fmt.Println("Data saved")
 			valid2 = true
 		case 2:
 			valid2 = true
@@ -560,6 +592,8 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 		case 4:
 			*kill = true
 			valid2 = true
+		default:
+			fmt.Println("Invalid Input")
 		}
 	}
 }
@@ -693,7 +727,9 @@ func outputDataUserFormat(data *dataBase, i int) {
 		fmt.Printf("%-25s %s %s %s %s\n", "GPU", ":", data[i].gpuManufacturer, data[i].gpuModel, data[i].gpuSerial)
 	}
 
-	fmt.Printf("%-25s %s %.2f%%\n", "Battery Health", ":", data[i].batteryHealth)
+	if data[i].usingLaptop {
+		fmt.Printf("%-25s %s %.2f%%\n", "Battery Health", ":", data[i].batteryHealth)
+	}
 	fmt.Printf("%-25s %s %s\n", "Operating System", ":", data[i].operatingSystem)
 
 	footer()
@@ -736,7 +772,7 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) in
 	selectionSort(data, *totalUser, id)
 
 	right = *totalUser - 1
-	left = 0
+	left = 1
 	for left < right {
 		middle = (right + left) / 2
 		if data[middle].indexFloat(id) > searchData {
@@ -751,6 +787,7 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int) in
 }
 
 func selectionSort(data *dataBase, totalUser, id int) {
+	//asc
 	var idx int
 	var temp dataComponent
 
@@ -765,6 +802,72 @@ func selectionSort(data *dataBase, totalUser, id int) {
 		data[i] = data[idx]
 		data[idx] = temp
 	}
+}
+
+func selectionSortDesc(data *dataBase, totalUser, id int) {
+	//desc
+	var idx int
+	var temp dataComponent
+	for i := 1; i < totalUser; i++ {
+		idx = i
+		temp = data[i]
+		for y := i + 1; y < totalUser; y++ {
+			if data[y].indexFloat(id) > data[idx].indexFloat(id) {
+				idx = y
+			}
+		}
+		data[i] = data[idx]
+		data[idx] = temp
+	}
+
+}
+
+func insertionSortData(data *dataBase, totalUser, id int) {
+	var idx int
+	var temp dataComponent
+
+	for i := 2; i < totalUser; i++ {
+		idx = i
+		temp = data[i]
+		for idx > 1 && data[idx-1].indexFloat(id) > temp.indexFloat(id) {
+			data[idx] = data[idx-1]
+			idx = idx - 1
+		}
+		data[idx] = temp
+	}
+}
+
+func insertionSortDataDesc(data *dataBase, totalUser, id int) {
+	var idx int
+	var temp dataComponent
+	for i := 2; i < totalUser; i++ {
+		idx = i
+		temp = data[i]
+		for idx > 1 && data[idx-1].indexFloat(id) < temp.indexFloat(id) {
+			data[idx] = data[idx-1]
+			idx = idx - 1
+		}
+		data[idx] = temp
+	}
+}
+
+func jenisSorting() bool {
+	var input int
+	var valid bool = false
+	var ascending bool
+	fmt.Printf("%-45s%s\n%-45s%s\n", "1. Ascending", "2. Descending")
+	footer()
+	for !valid {
+		fmt.Print("Input: ")
+		fmt.Scan(&input)
+		if input == 1 || input == 2 {
+			valid = true
+		} else {
+			fmt.Println("Invalid Input")
+		}
+	}
+	ascending = input == 1
+	return ascending
 }
 
 // https://go.dev/tour/methods/4 pake receiver biar ga banyak if else
@@ -855,10 +958,11 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 	var exit bool = false
 	var input int
 
-	fmt.Printf("%45s", "DELETE PAGE")
+	fmt.Printf("%45s", "DELETE PAGE\n")
 	if loggedInUser == 0 {
 		deleteDataMenuAdministrator(data, kill, totalUser)
 	} else {
+		fmt.Printf("%-42s%s\n%-42s%s\n%-42s%s\n%-42s%s\n", " ", "1. Delete My Data", " ", "2. Exit", " ", "3. Logout", " ", "4. Kill Program")
 		for !exit {
 			footer()
 			fmt.Print("Input: ")
@@ -876,9 +980,12 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				}
 			case 2: //exit
 				exit = true
-			case 3: //kill
+			case 3: //logout
+				*login = false
 				exit = true
+			case 4: //kill
 				*kill = true
+				exit = true
 			default:
 				fmt.Println("Invalid Input")
 				footer()
@@ -887,6 +994,7 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 	}
 }
 
+// nanti dibenerin
 func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 	var input int
 	var exit bool = false
@@ -894,6 +1002,15 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 	var searchType, index int
 	var searchDataF float64
 	var searchDataS string
+
+	fmt.Printf("\n%-36s%s\n\n", " ", "DELETE MENU FOR ENDMINISTRATOR")
+	fmt.Printf("%-33s%s\n", " ", "1. Show All User With Specific Data")
+	fmt.Printf("%-33s%s\n", "", "2. Delete User PC Data")
+	fmt.Printf("%-33s%s\n", " ", "3. Delete User Account")
+	fmt.Printf("%-33s%s\n", " ", "4. Search and Delete User with Specific Data")
+	fmt.Printf("%-33s%s\n", " ", "5. Exit")
+	fmt.Printf("%-33s%s\n", " ", "6. Kill Program")
+
 	for !exit {
 		footer()
 		fmt.Print("Input: ")
@@ -928,7 +1045,7 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 			for !valid {
 				fmt.Print("Which user's data do you want to delete: ")
 				fmt.Scan(&deleteIndex)
-				if deleteIndex < totalUser && deleteIndex > 0 {
+				if deleteIndex < *totalUser && deleteIndex > 0 {
 					deletion(data, deleteIndex, totalUser, 1)
 					valid = true
 				}
@@ -976,11 +1093,471 @@ func deletion(data *dataBase, loggedInUser int, totalUser *int, id int) {
 // }
 
 func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
+	var exit bool = false
+	var input int
+
+	fmt.Printf("\n%-44s%s\n", "", "STATISTIC MENU")
+	if loggedInUser == 0 {
+		fmt.Printf("%-19s%s\n", " ", "1. Show component status (all users)")
+		fmt.Printf("%-19s%s\n", " ", "2. Show average temperatures (all users)")
+		fmt.Printf("%-19s%s\n", " ", "3. Sort users by CPU temp")  //selection Sort
+		fmt.Printf("%-19s%s\n", " ", "4. Sort users by GPU temp")  //selection Sort
+		fmt.Printf("%-19s%s\n", " ", "5. Sort users by RAM temp")  //Insertion sort
+		fmt.Printf("%-19s%s\n", " ", "6. Search user by status")   //sequential search
+		fmt.Printf("%-19s%s\n", " ", "7. Search user by CPU temp") //binary search
+		fmt.Printf("%-19s%s\n", " ", "8. Exit")
+		fmt.Printf("%-19s%s\n", " ", "9. Logout")
+		fmt.Printf("%-19s%s\n", " ", "10. Kill Program")
+		for !exit {
+			footer()
+			fmt.Print("Input: ")
+			fmt.Scan(&input)
+			switch input {
+			case 1:
+				showUserStatus(data, totalUser)
+			case 2:
+				showAverageTemp(data, totalUser)
+			case 3:
+				showSortedCpuTemp(data, totalUser)
+			case 4:
+				showSortedGpuTemp(data, totalUser)
+			case 5:
+				showSortedRamTemp(data, totalUser)
+			case 6:
+				searchUserStatus(data, totalUser)
+			case 7:
+				searchUserCpuTemp(data, totalUser)
+			case 8:
+				exit = true
+			case 9:
+				*login = false
+				exit = true
+			case 10:
+				*kill = true
+				exit = true
+			default:
+				fmt.Println("Invalid Input")
+			}
+		}
+	} else {
+		fmt.Printf("%-19s%s\n", " ", "1. Show my status")
+		fmt.Printf("%-19s%s\n", " ", "2. Show my temperature statistics")
+		fmt.Printf("%-19s%s\n", " ", "3. Exit")
+		fmt.Printf("%-19s%s\n", " ", "4. Logout")
+		fmt.Printf("%-19s%s\n", " ", "5. Kill Program")
+		for !exit {
+			footer()
+			fmt.Print("Input: ")
+			fmt.Scan(&input)
+			switch input {
+			case 1:
+				showUserStatus(data, totalUser)
+			case 2:
+				showUserTempStats(data, loggedInUser)
+			case 3:
+				exit = true
+			case 4:
+				*login = false
+				exit = true
+			case 5:
+				*kill = true
+				exit = true
+			default:
+				fmt.Println("Invalid Input")
+			}
+		}
+	}
+}
+
+func showUserStatus(data *dataBase, totalUser *int){
+	var countGood, countWarning, countCritical, countVeriCritical, countNone int 
+
+	for i := 1; i < *totalUser; i++ {
+		if !data[i].dataSudahDiisi {
+			countNone++
+		}else {
+			status := upperCaseConverter(data[i].status)
+			fmt.Printf("\nUser %d: %s\n", i, data[i].user)
+			if data[i].dataSudahDiisi {
+				fmt.Printf("%-2sStatus: %s\n", "", data[i].status)
+			} else {
+				fmt.Printf("%-2sStatus: Data unavailable\n", "")
+			}
+
+			if status == "GUD" {
+				countGood++
+			}else if status == "WARNING" {
+				countWarning++
+			}else if status == "CRITICAL" {
+				countCritical++
+			}else if status == "VERY_CRITICAL" {
+				countVeriCritical++
+			}
+		}
+	}
+
+	fmt.Printf("\nTOTAL USER STATUS STATISTICS\n\n")
+	fmt.Printf("%-20s: %d\n","Good", countGood)
+	fmt.Printf("%-20s: %d\n","Warning", countWarning)
+	fmt.Printf("%-20s: %d\n","Critical", countCritical)
+	fmt.Printf("%-20s: %d\n","Very Critical", countVeriCritical)
+	fmt.Printf("%-20s: %d\n","None", countNone)
+}
+
+func showAverageTemp(data *dataBase, totalUser *int) {
+
+}
+
+func showSortedCpuTemp(data *dataBase, totalUser *int) {
+
+}
+
+func showSortedGpuTemp(data *dataBase, totalUser *int) {
+
+}
+
+func showSortedRamTemp(data *dataBase, totalUser *int) {
+
+}
+
+func searchUserStatus(data *dataBase, totalUser *int) {
+
+}
+
+func searchUserCpuTemp(data *dataBase, totalUser *int) {
+
+}
+
+func showUserTempStats(data *dataBase, loggedInUser int) {
 
 }
 
 func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
+	var exit bool = false
+	var input int
+	// buat admin
+	if loggedInUser == 0 {
+		if *totalUser <= 1 {
+			fmt.Println("No user data, so you kanot chenj aowkaokwaoakow")
+			footer()
+		} else {
+			fmt.Printf("\n%-41s%s\n\n", " ", "CHANGE DATA FOR USER")
+			footer()
+			fmt.Printf("%-34sInput User index you want to change\n", " ")
+			fmt.Printf("%-44sTotal User: %d\n", " ", *totalUser-1)
+			fmt.Printf("Type 0 to Exit\n")
+			fmt.Println()
+			fmt.Println("USERNAME: ")
+			for i := 1; i < *totalUser; i++ {
+				fmt.Printf("User %d: %s\n", i, data[i].user)
+			}
+			footer()
+			for !exit {
+				fmt.Print("Input: ")
+				fmt.Scan(&input)
+				if input > 0 && input < *totalUser {
+					if data[input].dataSudahDiisi {
+						changeDataUserLogic(data, input, kill, login)
+					} else {
+						fmt.Println("No data available to change for this user")
+					}
+					exit = true
+				} else if input == 0 {
+					exit = true
+				} else {
+					fmt.Println("Invalid Input")
+				}
+			}
+		}
+		//buat user (bisa ubah data sendiri)
+	} else {
+		if data[loggedInUser].dataSudahDiisi {
+			changeDataUserLogic(data, loggedInUser, kill, login)
+		} else {
+			fmt.Println("No data available to change")
+		}
+	}
+}
 
+func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bool) {
+	var exit bool = false
+	var input int
+
+	fmt.Printf("\n%-43s%s\n\n", " ", "CHANGE DATA MENU USER")
+	fmt.Printf("%-40s%s\n", " ", "1. Serial Code")
+	fmt.Printf("%-40s%s\n", " ", "2. CPU")
+	fmt.Printf("%-40s%s\n", " ", "3. GPU")
+	fmt.Printf("%-40s%s\n", " ", "4. RAM Capacity")
+	fmt.Printf("%-40s%s\n", " ", "5. Disk Capacity")
+	fmt.Printf("%-40s%s\n", " ", "6. CPU Temperature Data")
+	fmt.Printf("%-40s%s\n", " ", "7. GPU Temperature Data")
+	fmt.Printf("%-40s%s\n", " ", "8. RAM Temperature Data")
+	fmt.Printf("%-40s%s\n", " ", "9. Ram Usage")
+	fmt.Printf("%-40s%s\n", " ", "10. Disk Usage")
+	fmt.Printf("%-40s%s\n", " ", "11. Operating System")
+	fmt.Printf("%-40s%s\n", " ", "12. Load Status")
+	fmt.Printf("%-40s%s\n", " ", "13. Last Maintenance Date")
+	if data[loggedInUser].usingLaptop {
+		fmt.Printf("%-40s%s\n", " ", "14. Battery Health")
+	}
+	fmt.Printf("%-40s%s\n", " ", "15. Exit")
+	fmt.Printf("%-40s%s\n", " ", "16. Logout")
+	fmt.Printf("%-40s%s\n", " ", "17. Kill Program")
+	footer()
+	for !exit {
+		fmt.Print("Input: ")
+		fmt.Scan(&input)
+
+		switch input {
+		case 1:
+			var newSerial string
+			var valid bool = false
+			for !valid {
+				fmt.Print("New Serial Code: ")
+				fmt.Scan(&newSerial)
+				valid = checkValidityInput(newSerial, 1, "")
+				if !valid {
+					fmt.Println("Serial Code cannot be null or none")
+				}
+			}
+			data[loggedInUser].serialCode = newSerial
+			fmt.Println("Serial Code Changed")
+
+		case 2:
+			var newManuf, newModel, newSerial string
+			validManuf := false
+			validModel := false
+			for !validManuf || !validModel {
+				fmt.Print("CPU: ")
+				fmt.Scan(&newManuf, &newModel, &newSerial)
+				validManuf = checkValidityInput(newManuf, 2, "")
+				validModel = checkValidityInput(newModel, 3, newManuf)
+				if !validManuf || !validModel {
+					fmt.Println("Invalid Manufacturer or Invalid Model Input")
+				}
+			}
+			data[loggedInUser].cpuManufacturer = upperCaseConverter(newManuf)
+			data[loggedInUser].cpuModel = upperCaseConverter(newModel)
+			data[loggedInUser].cpuSerial = newSerial
+			setData(data, loggedInUser)
+			fmt.Println("CPU Info updated.")
+
+		case 3:
+			var newManuf, newModel, newSerial string
+	validGpuManuf := false
+	validGpuModel := false
+	for !validGpuManuf || !validGpuModel {
+		fmt.Print("GPU: ")
+		fmt.Scan(&newManuf)
+		validGpuManuf = checkValidityInput(newManuf, 4, "")
+		x := upperCaseConverter(newManuf)
+		if validGpuManuf && (x != "NONE") {
+			fmt.Scan(&newModel, &newSerial)
+			validGpuModel = checkValidityInput(newModel, 5, newManuf)
+		} else if validGpuManuf && (x == "NONE") {
+			validGpuModel = true
+		}
+	}
+			data[loggedInUser].gpuManufacturer = upperCaseConverter(newManuf)
+			data[loggedInUser].gpuModel = upperCaseConverter(newModel)
+			data[loggedInUser].gpuSerial = newSerial
+			setData(data, loggedInUser)
+			fmt.Println("GPU Info updated.")
+
+		case 4:
+			var newCap float64
+			var valid bool = false
+			for !valid {
+				fmt.Print("New RAM Capacity (GiB): ")
+				fmt.Scan(&newCap)
+				if newCap > 0 {
+					valid = true
+				} else {
+					fmt.Println("Capacity must be greater than 0")
+				}
+			}
+			data[loggedInUser].ramCapacity = newCap
+			fmt.Println("RAM Capacity updated.")
+
+		case 5:
+			var newCap float64
+			var valid bool = false
+			for !valid {
+				fmt.Print("New Disk Capacity (GiB): ")
+				fmt.Scan(&newCap)
+				if newCap > 0 {
+					valid = true
+				} else {
+					fmt.Println("Capacity must be greater than 0")
+				}
+			}
+			data[loggedInUser].diskCapacity = newCap
+			fmt.Println("Disk Capacity updated.")
+
+		case 6:
+			var newTemps [10]float64
+			fmt.Print("Input 10 CPU Temperatures: ")
+			for i := 0; i < 10; i++ {
+				fmt.Scan(&newTemps[i])
+			}
+			var avg, med, mod, min, max float64
+			processData(&min, &max, &med, &mod, &avg, newTemps)
+			data[loggedInUser].rataCpuTemp = avg
+			data[loggedInUser].medCpuTemp = med
+			data[loggedInUser].modCpuTemp = mod
+			data[loggedInUser].minCpuTemp = min
+			data[loggedInUser].maxCpuTemp = max
+			setData(data, loggedInUser)
+			fmt.Println("CPU Temperatures updated.")
+
+		case 7:
+			if data[loggedInUser].gpuManufacturer == "NONE" {
+				fmt.Println("No GPU installed, skipping.")
+			} else {
+				var newTemps [10]float64
+				fmt.Print("Input 10 GPU Temperatures: ")
+				for i := 0; i < 10; i++ {
+					fmt.Scan(&newTemps[i])
+				}
+				var avg, med, mod, min, max float64
+				processData(&min, &max, &med, &mod, &avg, newTemps)
+				data[loggedInUser].rataGpuTemp = avg
+				data[loggedInUser].medGpuTemp = med
+				data[loggedInUser].modGpuTemp = mod
+				data[loggedInUser].minGpuTemp = min
+				data[loggedInUser].maxGpuTemp = max
+				setData(data, loggedInUser)
+				fmt.Println("GPU Temperatures updated.")
+			}
+
+		case 8:
+			var newTemps [10]float64
+			fmt.Print("Input 10 RAM Temperatures: ")
+			for i := 0; i < 10; i++ {
+				fmt.Scan(&newTemps[i])
+			}
+			var avg, med, mod, min, max float64
+			processData(&min, &max, &med, &mod, &avg, newTemps)
+			data[loggedInUser].rataRamTemp = avg
+			data[loggedInUser].medRamTemp = med
+			data[loggedInUser].modRamTemp = mod
+			data[loggedInUser].minRamTemp = min
+			data[loggedInUser].maxRamTemp = max
+			setData(data, loggedInUser)
+			fmt.Println("RAM Temperatures updated.")
+
+		case 9:
+			var newUsage float64
+			var valid bool = false
+			for !valid {
+				fmt.Print("New RAM Usage (GiB): ")
+				fmt.Scan(&newUsage)
+				if newUsage >= 0 && newUsage <= data[loggedInUser].ramCapacity {
+					valid = true
+				} else {
+					fmt.Println("RAM usage cannot exceed RAM capacity or be negative")
+				}
+			}
+			data[loggedInUser].ramUsed = newUsage
+			setData(data, loggedInUser)
+			fmt.Println("RAM Usage updated.")
+
+		case 10:
+			var newUsage float64
+			var valid bool = false
+			for !valid {
+				fmt.Print("New Disk Usage (GiB): ")
+				fmt.Scan(&newUsage)
+				if newUsage >= 0 && newUsage <= data[loggedInUser].diskCapacity {
+					valid = true
+				} else {
+					fmt.Println("Disk usage cannot exceed Disk capacity or be negative")
+				}
+			}
+			data[loggedInUser].diskUsed = newUsage
+			setData(data, loggedInUser)
+			fmt.Println("Disk Usage updated.")
+
+		case 11:
+			var newOS string
+			var valid bool = false
+			for !valid {
+				fmt.Print("New Operating System (Windows/Linux/MacOS): ")
+				fmt.Scan(&newOS)
+				valid = checkValidityInput(newOS, 7, "")
+				if !valid {
+					fmt.Println("Invalid OS, must be Windows / Linux / MacOS")
+				}
+			}
+			data[loggedInUser].operatingSystem = upperCaseConverter(newOS)
+			setData(data, loggedInUser)
+			fmt.Println("Operating System updated.")
+
+		case 12:
+			var newLoad string
+			var valid bool = false
+			for !valid {
+				fmt.Print("Heavy Load? (Yes/No): ")
+				fmt.Scan(&newLoad)
+				newLoad = upperCaseConverter(newLoad)
+				if newLoad == "YES" {
+					data[loggedInUser].dataLoad = true
+					valid = true
+				} else if newLoad == "NO" {
+					data[loggedInUser].dataLoad = false
+					valid = true
+				} else {
+					fmt.Println("Input must be Yes or No")
+				}
+			}
+			setData(data, loggedInUser)
+			fmt.Println("Load Status updated.")
+
+		case 13:
+			var newDate string
+			var valid bool = false
+			for !valid {
+				fmt.Print("New Last Maintenance Date (DD-MM-YYYY): ")
+				fmt.Scan(&newDate)
+				valid = checkValidityInput(newDate, 6, "")
+				if !valid {
+					fmt.Println("Invalid date format, use DD-MM-YYYY")
+				}
+			}
+			data[loggedInUser].lastMaintenanceDate = newDate
+			data[loggedInUser].nextMaintenanceDate = nextMaintenance(newDate, data[loggedInUser].status)
+			fmt.Println("Maintenance Date updated.")
+
+		case 14:
+			if data[loggedInUser].usingLaptop {
+				var newBatt float64
+				var valid bool = false
+				for !valid {
+					fmt.Print("New Battery Health (%): ")
+					fmt.Scan(&newBatt)
+					if newBatt >= 0 && newBatt <= 100 {
+						valid = true
+					} else {
+						fmt.Println("Battery health must be between 0 and 100")
+					}
+				}
+				data[loggedInUser].batteryHealth = newBatt
+				fmt.Println("Battery Health updated.")
+			} else {
+				fmt.Println("Invalid Input")
+			}
+		case 15:
+			exit = true
+		case 16:
+			exit = true
+			*login = false
+		case 17:
+			exit = true
+			*kill = true
+		default:
+			fmt.Println("Invalid Input")
+		}
+	}
 }
 
 func setData(data *dataBase, loggedInUser int) {
@@ -989,7 +1566,7 @@ func setData(data *dataBase, loggedInUser int) {
 	var ramOverheat bool = false
 	var sisaAvailableRam, sisaAvailableDisk float64
 
-	nextMaintenance = data[loggedInUser].lastMaintenanceDate
+	// nextMaintenance := data[loggedInUser].lastMaintenanceDate
 	if data[loggedInUser].cpuManufacturer == "INTEL" {
 		if data[loggedInUser].cpuModel == "PENTIUM" {
 			if (data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 85) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataCpuTemp >= 70) {
@@ -1085,4 +1662,60 @@ func setData(data *dataBase, loggedInUser int) {
 	} else {
 		data[loggedInUser].status = "GUD"
 	}
+	data[loggedInUser].nextMaintenanceDate = nextMaintenance(data[loggedInUser].lastMaintenanceDate, data[loggedInUser].status)
 }
+
+func nextMaintenance(lastMaintenanceDate string, status string) string {
+	if len(lastMaintenanceDate) != 10 {
+		return "Invalid Date"
+	}
+
+	tanggal := int(lastMaintenanceDate[0]-'0')*10 + int(lastMaintenanceDate[1]-'0')
+	bulan := int(lastMaintenanceDate[3]-'0')*10 + int(lastMaintenanceDate[4]-'0')
+	tahun := int(lastMaintenanceDate[6]-'0')*1000 + int(lastMaintenanceDate[7]-'0')*100 + int(lastMaintenanceDate[8]-'0')*10 + int(lastMaintenanceDate[9]-'0')
+
+	if status == "VERY_CRITICAL" {
+		tanggal = tanggal + 1
+	} else if status == "CRITICAL" {
+		tanggal = tanggal + 7
+	} else if status == "WARNING" {
+		bulan = bulan + 3
+	} else if status == "GUD" {
+		bulan = bulan + 6
+	}
+
+	if tanggal > 30 {
+		tanggal = tanggal - 30
+		bulan = bulan + 1
+	}
+	if bulan > 12 {
+		bulan = bulan - 12
+		tahun = tahun + 1
+	}
+
+	hasil := ""
+	if tanggal < 10 {
+		hasil = hasil + "0"
+	}
+	hasil = hasil + stringConverter(tanggal) + "-"
+	if bulan < 10 {
+		hasil = hasil + "0"
+	}
+	hasil = hasil + stringConverter(bulan) + "-"
+	hasil = hasil + stringConverter(tahun)
+	return hasil
+}
+
+func stringConverter(x int) string {
+	if x == 0 {
+		return "0"
+	}
+	var hasil string
+	hasil = ""
+	for x > 0 {
+		hasil = string(rune('0'+x%10)) + hasil
+		x = x / 10
+	}
+	return hasil
+}
+
