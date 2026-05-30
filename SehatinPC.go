@@ -1683,9 +1683,19 @@ func nextMaintenance(lastMaintenanceDate string, status string) string {
 	} else if status == "GUD" {
 		bulan = bulan + 6
 	}
+	var tanggalDalamBulan int
+	if bulan == 1 || bulan == 3 || bulan == 5 || bulan == 7 || bulan == 8 || bulan == 10 || bulan == 12 {
+		tanggalDalamBulan = 31
+	} else if bulan == 4 || bulan == 6 || bulan == 9 || bulan == 11 {
+		tanggalDalamBulan = 30
+	} else if (tahun%4 == 0 && tahun%100 != 0) || (tahun%400 == 0) {
+		tanggalDalamBulan = 29
+	} else {
+		tanggalDalamBulan = 28
+	}
 
-	if tanggal > 30 {
-		tanggal = tanggal - 30
+	if tanggal > tanggalDalamBulan {
+		tanggal = tanggal - tanggalDalamBulan
 		bulan = bulan + 1
 	}
 	if bulan > 12 {
