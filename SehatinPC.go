@@ -646,7 +646,7 @@ func checkValidityInput(x string, i int, y string) bool {
 				return false
 			}
 		} else if y == "APPLE" {
-			if x[0] != 'M' {
+			if x[0] != 'M' || len(x) == 0 {
 				return false
 			}
 		}
@@ -719,7 +719,7 @@ func showDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, tot
 
 func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%-40s\n\n", "GENERAL SPESIFICATIONS")
-	fmt.Printf("%s %d%-19s%s %s\n", "User", i, "", ":", data[i].user)
+	fmt.Printf("%s %d%-20s%s %s\n", "User", i, "", ":", data[i].user)
 	fmt.Printf("%-25s %s %s\n", "Serial Code", ":", data[i].serialCode)
 	fmt.Printf("%-25s %s %s %s %s\n", "CPU", ":", data[i].cpuManufacturer, data[i].cpuModel, data[i].cpuSerial)
 
@@ -765,6 +765,12 @@ func outputDataUserFormat(data *dataBase, i int) {
 	footer()
 }
 
+func cloningData(dataAsli *dataBase, dataCopy *dataBase, totalUser int) {
+	for i := 0; i < totalUser; i++ {
+		dataCopy[i] = dataAsli[i]
+	}
+}
+
 func binarySearch(data *dataBase, searchData float64, totalUser *int, id int, batasKanan, batasKiri *int) {
 	var right, left, middle int
 	// var dataCopy dataBase
@@ -774,7 +780,7 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int, ba
 	*batasKanan = -1
 	right = *totalUser - 1
 	left = 1
-	for left < right {
+	for left <= right {
 		middle = (right + left) / 2
 		if data[middle].indexFloat(id) > searchData {
 			right = middle - 1
@@ -789,13 +795,13 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int, ba
 
 	if *batasKiri != -1 && *batasKanan != -1 {
 
-	for (data[*batasKiri].indexFloat(id) == searchData && *batasKiri >= 1) {
-		*batasKiri = *batasKiri - 1
-	}
-	
-	for (data[*batasKanan].indexFloat(id) == searchData && *batasKanan < *totalUser) {
-		*batasKanan = *batasKanan + 1
-	}
+		for data[*batasKiri-1].indexFloat(id) == searchData && *batasKiri > 1 {
+			*batasKiri = *batasKiri - 1
+		}
+
+		for data[*batasKanan+1].indexFloat(id) == searchData && *batasKanan < *totalUser-1 {
+			*batasKanan = *batasKanan + 1
+		}
 	}
 }
 
@@ -864,11 +870,38 @@ func insertionSortDataDesc(data *dataBase, totalUser, id int) {
 	}
 }
 
+func insertionSortDataString(data *dataBase, totalUser, id int) {
+	var idx int
+	var temp dataComponent
+	for i := 2; i < totalUser; i++ {
+		idx = i
+		temp = data[i]
+		for idx > 1 && data[idx-1].indexString(id) > temp.indexString(id) {
+			data[idx] = data[idx-1]
+			idx = idx - 1
+		}
+		data[idx] = temp
+	}
+}
+
+func insertionSortDataStringDesc(data *dataBase, totalUser, id int) {
+	var idx int
+	var temp dataComponent
+	for i := 2; i < totalUser; i++ {
+		idx = i
+		temp = data[i]
+		for idx > 1 && data[idx-1].indexString(id) < temp.indexString(id) {
+			data[idx] = data[idx-1]
+			idx = idx - 1
+		}
+		data[idx] = temp
+	}
+}
 func jenisSorting() bool {
 	var input int
 	var valid bool = false
 	var ascending bool
-	fmt.Printf("%-45s%s\n%-45s%s\n","", "1. Ascending","", "2. Descending")
+	fmt.Printf("%-45s%s\n%-45s%s\n", "", "1. Ascending", "", "2. Descending")
 	footer()
 	for !valid {
 		fmt.Print("Input: ")
@@ -953,6 +986,10 @@ func (x dataComponent) indexString(idx int) string {
 		return x.operatingSystem
 	case 8:
 		return x.status
+	case 9:
+		return x.serialCode
+	case 10:
+		return x.user
 	default:
 		return ""
 	}
@@ -967,13 +1004,22 @@ func sequentialSearch(data *dataBase, searchData string, totalUser *int, id int)
 	}
 }
 
+func sequentialSearchIndex(data *dataBase, searchData string, totalUser *int) int {
+	for i := 1; i < *totalUser; i++ {
+		if data[i].user == searchData {
+			return i
+		}
+	}
+	return -1
+}
+
 func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	var exit bool = false
 	var input int
 
 	fmt.Printf("%45s", "DELETE PAGE\n")
 	if loggedInUser == 0 {
-		deleteDataMenuAdministrator(data, kill, totalUser)
+		deleteDataMenuAdministrator(data, kill, login, totalUser)
 	} else {
 		fmt.Printf("%-42s%s\n%-42s%s\n%-42s%s\n%-42s%s\n", " ", "1. Delete My Data", " ", "2. Exit", " ", "3. Logout", " ", "4. Kill Program")
 		for !exit {
@@ -1008,7 +1054,7 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 }
 
 // nanti dibenerin
-func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
+func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalUser *int) {
 	var input int
 	var exit bool = false
 	var valid bool = false
@@ -1018,11 +1064,10 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 
 	fmt.Printf("\n%-36s%s\n\n", " ", "DELETE MENU FOR ENDMINISTRATOR")
 	fmt.Printf("%-33s%s\n", " ", "1. Show All User With Specific Data")
-	fmt.Printf("%-33s%s\n", "", "2. Delete User PC Data")
+	fmt.Printf("%-33s%s\n", " ", "2. Delete User PC Data")
 	fmt.Printf("%-33s%s\n", " ", "3. Delete User Account")
-	fmt.Printf("%-33s%s\n", " ", "4. Search and Delete User with Specific Data")
-	fmt.Printf("%-33s%s\n", " ", "5. Exit")
-	fmt.Printf("%-33s%s\n", " ", "6. Kill Program")
+	fmt.Printf("%-33s%s\n", " ", "4. Exit")
+	fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
 
 	for !exit {
 		footer()
@@ -1030,37 +1075,138 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, totalUser *int) {
 		fmt.Scan(&input)
 		switch input {
 		case 1: //show all data with specific thing
-			for !valid {
-				fmt.Scan(&searchType)
-				if searchType >= 1 && searchType <= 27 {
-					valid = true
-				}
-			}
-			if searchType >= 1 && searchType <= 19 {
-				fmt.Print("Data: ")
-				fmt.Scan(&searchDataF)
-				var batasKanan, batasKiri int
-				binarySearch(data, searchDataF, totalUser, searchType, &batasKanan, &batasKiri)
-				for i := batasKiri + 1; i < batasKanan; i++ {
-					fmt.Printf("User %d: %s with data: %.2f \n", i, data[i].user, data[i].indexFloat(searchType))
-				}
+			if *totalUser <= 1 {
+				fmt.Println("No user data available")
+				footer()
 			} else {
-				fmt.Print("Data: ")
-				fmt.Scan(&searchDataS)
-				sequentialSearch(data, searchDataS, totalUser, searchType-19)
+				fmt.Printf("%-33s%s\n", " ", "1. Average CPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "2. Average GPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "3. Average RAM Temperature")
+				fmt.Printf("%-33s%s\n", " ", "4. Median CPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "5. Median GPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "6. Median RAM Temperature")
+				fmt.Printf("%-33s%s\n", " ", "7. Modus CPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "8. Modus GPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "9. Modus RAM Temperature")
+				fmt.Printf("%-33s%s\n", " ", "10. Minimum CPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "11. Minimum GPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "12. Minimum RAM Temperature")
+				fmt.Printf("%-33s%s\n", " ", "13. Maximum CPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "14. Maximum GPU Temperature")
+				fmt.Printf("%-33s%s\n", " ", "15. Maximum RAM Temperature")
+				fmt.Printf("%-33s%s\n", " ", "16. RAM Capacity")
+				fmt.Printf("%-33s%s\n", " ", "17. RAM Used")
+				fmt.Printf("%-33s%s\n", " ", "18. Disk Capacity")
+				fmt.Printf("%-33s%s\n", " ", "19. Disk Used")
+				fmt.Printf("%-33s%s\n", " ", "20. CPU Manufacturer")
+				fmt.Printf("%-33s%s\n", " ", "21. GPU Manufacturer")
+				fmt.Printf("%-33s%s\n", " ", "22. CPU Model")
+				fmt.Printf("%-33s%s\n", " ", "23. GPU Model")
+				fmt.Printf("%-33s%s\n", " ", "24. CPU Serial")
+				fmt.Printf("%-33s%s\n", " ", "25. GPU Serial")
+				fmt.Printf("%-33s%s\n", " ", "26. Operating System")
+				fmt.Printf("%-33s%s\n", " ", "27. User Status")
+				fmt.Printf("%-33s%s\n", " ", "28. Serial Code")
+				fmt.Printf("%-33s%s\n", " ", "29. Exit")
+				fmt.Printf("%-33s%s\n", " ", "30. Logout")
+				fmt.Printf("%-33s%s\n", " ", "31. Kill Program")
+
+				valid = false
+				for !valid {
+					fmt.Scan(&searchType)
+					if searchType >= 0 && searchType <= 31 {
+						valid = true
+					} else {
+						fmt.Println("Invalid Input")
+					}
+				}
+				if searchType == 29 {
+					exit = true
+				} else if searchType == 30 {
+					*login = false
+					exit = true
+				} else if searchType == 31 {
+					*kill = true
+					exit = true
+				} else if searchType >= 1 && searchType <= 19 {
+					fmt.Print("Data: ")
+					fmt.Scan(&searchDataF)
+					var copyData dataBase
+					cloningData(data, &copyData, *totalUser)
+					var batasKanan, batasKiri int
+					binarySearch(&copyData, searchDataF, totalUser, searchType, &batasKanan, &batasKiri)
+					if batasKiri == -1 {
+						fmt.Println("No data found on any user")
+					} else {
+						for i := batasKiri; i <= batasKanan; i++ {
+							fmt.Printf("User: %s with data: %.2f\n", copyData[i].user, copyData[i].indexFloat(searchType))
+						}
+					}
+				} else {
+					fmt.Print("Data:")
+					fmt.Scan(&searchDataS)
+					sequentialSearch(data, searchDataS, totalUser, searchType-19)
+				}
 			}
+			exit = true
 		case 2: //delete user data
-			var deleteIndex int
+			var deleteUser string
+			valid = false
 			for !valid {
 				fmt.Print("Which user's data do you want to delete: ")
-				fmt.Scan(&deleteIndex)
-				if deleteIndex < *totalUser && deleteIndex > 0 {
-					deletion(data, deleteIndex, totalUser, 1)
-					valid = true
+				fmt.Scan(&deleteUser)
+				deleteIndex := sequentialSearchIndex(data, deleteUser, totalUser)
+				if deleteIndex != -1 {
+					fmt.Println("This User's Data: ")
+					outputDataUserFormat(data, deleteIndex)
+					fmt.Print("Are you sure about that? (YES/NO)")
+					var confirm string
+					fmt.Scan(&confirm)
+					if upperCaseConverter(confirm) == "YES" {
+						deletion(data, deleteIndex, totalUser, 1)
+						valid = true
+					} else {
+						valid = true
+					}
+				} else {
+					fmt.Println("User not found")
 				}
 			}
+			exit = true
 		case 3: //delete user
+			if *totalUser <= 1 {
+				fmt.Println("No user data available")
+				footer()
+				exit = true
+			} else {
+				var deleteIndex int
+				var deleteUser string
 
+				valid = false
+				for !valid {
+					for !valid {
+						fmt.Print("Which user's data do you want to delete: ")
+						fmt.Scan(&deleteUser)
+						deleteIndex = sequentialSearchIndex(data, deleteUser, totalUser)
+						if deleteIndex != -1 {
+							fmt.Println("This User's Data: ")
+							outputDataUserFormat(data, deleteIndex)
+							fmt.Print("Are you sure about that this is permanent? (YES/NO)")
+							var confirm string
+							fmt.Scan(&confirm)
+							if upperCaseConverter(confirm) == "YES" {
+								deletion(data, deleteIndex, totalUser, 2)
+								valid = true
+							} else {
+								valid = true
+							}
+						} else {
+							fmt.Println("User not found")
+						}
+					}
+				}
+			}
+			exit = true
 		case 4: //exit
 			exit = true
 		case 5: //kill
@@ -1107,16 +1253,17 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 
 	fmt.Printf("\n%-44s%s\n", "", "STATISTIC MENU")
 	if loggedInUser == 0 {
-		fmt.Printf("%-19s%s\n", " ", "1. Show component status (all users)")
-		fmt.Printf("%-19s%s\n", " ", "2. Show temperature statistics (all users)")
-		fmt.Printf("%-19s%s\n", " ", "3. Sort users by CPU temp")  //selection Sort
-		fmt.Printf("%-19s%s\n", " ", "4. Sort users by GPU temp")  //selection Sort
-		fmt.Printf("%-19s%s\n", " ", "5. Sort users by RAM temp")  //Insertion sort
-		fmt.Printf("%-19s%s\n", " ", "6. Search user by status")   //sequential search
-		fmt.Printf("%-19s%s\n", " ", "7. Search user by CPU temp") //binary search
-		fmt.Printf("%-19s%s\n", " ", "8. Exit")
-		fmt.Printf("%-19s%s\n", " ", "9. Logout")
-		fmt.Printf("%-19s%s\n", " ", "10. Kill Program")
+		fmt.Printf("%-33s%s\n", " ", "1. Show component status (all users)")
+		fmt.Printf("%-33s%s\n", " ", "2. Show temperature statistics (all users)")
+		fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code")
+		fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")  //selection Sort
+		fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")  //selection Sort
+		fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
+		fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
+		fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
+		fmt.Printf("%-33s%s\n", " ", "8. Exit")
+		fmt.Printf("%-33s%s\n", " ", "10. Logout")
+		fmt.Printf("%-33s%s\n", " ", "11. Kill Program")
 		for !exit {
 			footer()
 			fmt.Print("Input: ")
@@ -1127,21 +1274,23 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			case 2:
 				showAverageTemp(data, totalUser)
 			case 3:
-				showSortedCpuTemp(data, totalUser)
+				showSortedSerialCode(data, totalUser)
 			case 4:
-				showSortedGpuTemp(data, totalUser)
+				showSortedCpuTemp(data, totalUser)
 			case 5:
-				showSortedRamTemp(data, totalUser)
+				showSortedGpuTemp(data, totalUser)
 			case 6:
-				searchUserStatus(data, totalUser)
+				showSortedRamTemp(data, totalUser)
 			case 7:
-				searchUserCpuTemp(data, totalUser)
+				searchUserStatus(data, totalUser)
 			case 8:
-				exit = true
+				searchUserCpuTemp(data, totalUser)
 			case 9:
-				*login = false
 				exit = true
 			case 10:
+				*login = false
+				exit = true
+			case 11:
 				*kill = true
 				exit = true
 			default:
@@ -1149,11 +1298,11 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			}
 		}
 	} else {
-		fmt.Printf("%-19s%s\n", " ", "1. Show my status")
-		fmt.Printf("%-19s%s\n", " ", "2. Show my temperature statistics")
-		fmt.Printf("%-19s%s\n", " ", "3. Exit")
-		fmt.Printf("%-19s%s\n", " ", "4. Logout")
-		fmt.Printf("%-19s%s\n", " ", "5. Kill Program")
+		fmt.Printf("%-33s%s\n", " ", "1. Show my status")
+		fmt.Printf("%-33s%s\n", " ", "2. Show my temperature statistics")
+		fmt.Printf("%-33s%s\n", " ", "3. Exit")
+		fmt.Printf("%-33s%s\n", " ", "4. Logout")
+		fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
 		for !exit {
 			footer()
 			fmt.Print("Input: ")
@@ -1178,13 +1327,13 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 	}
 }
 
-func showUserStatus(data *dataBase, totalUser *int){
-	var countGood, countWarning, countCritical, countVeriCritical, countNone int 
+func showUserStatus(data *dataBase, totalUser *int) {
+	var countGood, countWarning, countCritical, countVeriCritical, countNone int
 
 	for i := 1; i < *totalUser; i++ {
 		if !data[i].dataSudahDiisi {
 			countNone++
-		}else {
+		} else {
 			status := upperCaseConverter(data[i].status)
 			fmt.Printf("\nUser %d: %s\n", i, data[i].user)
 			if data[i].dataSudahDiisi {
@@ -1195,22 +1344,22 @@ func showUserStatus(data *dataBase, totalUser *int){
 
 			if status == "GUD" {
 				countGood++
-			}else if status == "WARNING" {
+			} else if status == "WARNING" {
 				countWarning++
-			}else if status == "CRITICAL" {
+			} else if status == "CRITICAL" {
 				countCritical++
-			}else if status == "VERY_CRITICAL" {
+			} else if status == "VERY_CRITICAL" {
 				countVeriCritical++
 			}
 		}
 	}
 
 	fmt.Printf("\nTOTAL USER STATUS STATISTICS\n\n")
-	fmt.Printf("%-20s: %d\n","Good", countGood)
-	fmt.Printf("%-20s: %d\n","Warning", countWarning)
-	fmt.Printf("%-20s: %d\n","Critical", countCritical)
-	fmt.Printf("%-20s: %d\n","Very Critical", countVeriCritical)
-	fmt.Printf("%-20s: %d\n","None", countNone)
+	fmt.Printf("%-20s: %d\n", "Good", countGood)
+	fmt.Printf("%-20s: %d\n", "Warning", countWarning)
+	fmt.Printf("%-20s: %d\n", "Critical", countCritical)
+	fmt.Printf("%-20s: %d\n", "Very Critical", countVeriCritical)
+	fmt.Printf("%-20s: %d\n", "None", countNone)
 }
 
 func showAverageTemp(data *dataBase, totalUser *int) {
@@ -1231,7 +1380,7 @@ func showAverageTemp(data *dataBase, totalUser *int) {
 	fmt.Printf("\n%-36s%s\n\n", "", "AVERAGE TEMPERATURE STATISTICS")
 	if countCpu > 0 {
 		fmt.Printf("%-20s: %.2f°C\n", "Average CPU Temperature", totalCpuTemp/float64(countCpu))
-	}else {
+	} else {
 		fmt.Printf("%-20s: %s\n", "Average CPU Temperature", "Data Unavailable")
 	}
 	if countGpu > 0 {
@@ -1252,13 +1401,15 @@ func showSortedCpuTemp(data *dataBase, totalUser *int) {
 		fmt.Println("No user data available")
 	} else {
 		var ascending bool = jenisSorting()
+		var dataCopy dataBase
+		cloningData(data, &dataCopy, *totalUser)
 		if ascending {
-			selectionSort(data, *totalUser, 1)
+			selectionSort(&dataCopy, *totalUser, 1)
 		} else {
-			selectionSortDesc(data, *totalUser, 1)
+			selectionSortDesc(&dataCopy, *totalUser, 1)
 		}
 		for i := 1; i < *totalUser; i++ {
-			fmt.Printf("User %d: %s with Average CPU Temperature: %.2f°C\n", i, data[i].user, data[i].rataCpuTemp)
+			fmt.Printf("User: %s with Average CPU Temperature: %.2f°C\n", dataCopy[i].user, dataCopy[i].rataCpuTemp)
 		}
 	}
 	footer()
@@ -1269,14 +1420,16 @@ func showSortedGpuTemp(data *dataBase, totalUser *int) {
 		fmt.Println("No user data available")
 	} else {
 		var ascending bool = jenisSorting()
+		var dataCopy dataBase
+		cloningData(data, &dataCopy, *totalUser)
 		if ascending {
-			selectionSort(data, *totalUser, 2)
+			selectionSort(&dataCopy, *totalUser, 2)
 		} else {
-			selectionSortDesc(data, *totalUser, 2)
+			selectionSortDesc(&dataCopy, *totalUser, 2)
 		}
 		for i := 1; i < *totalUser; i++ {
-			if data[i].gpuManufacturer != "NONE" {
-				fmt.Printf("User %d: %s with Average GPU Temperature: %.2f°C\n", i, data[i].user, data[i].rataGpuTemp)
+			if dataCopy[i].gpuManufacturer != "NONE" {
+				fmt.Printf("User: %s with Average GPU Temperature: %.2f°C\n", dataCopy[i].user, dataCopy[i].rataGpuTemp)
 			}
 		}
 	}
@@ -1288,50 +1441,75 @@ func showSortedRamTemp(data *dataBase, totalUser *int) {
 		fmt.Println("No user data available")
 	} else {
 		var ascending bool = jenisSorting()
+		var dataCopy dataBase
+		cloningData(data, &dataCopy, *totalUser)
 		if ascending {
-			insertionSortData(data, *totalUser, 3)
+			insertionSortData(&dataCopy, *totalUser, 3)
 		} else {
-			insertionSortDataDesc(data, *totalUser, 3)
+			insertionSortDataDesc(&dataCopy, *totalUser, 3)
 		}
 		for i := 1; i < *totalUser; i++ {
-			if data[i].dataSudahDiisi {
-				fmt.Printf("User %d: %s with Average RAM Temperature: %.2f°C\n", i, data[i].user, data[i].rataRamTemp)
+			if dataCopy[i].dataSudahDiisi {
+				fmt.Printf("User: %s with Average RAM Temperature: %.2f°C\n", dataCopy[i].user, dataCopy[i].rataRamTemp)
 			}
 		}
 	}
 	footer()
 }
-//gah damn dikit lg co 
+
+func showSortedSerialCode(data *dataBase, totalUser *int) {
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	} else {
+		var ascending bool = jenisSorting()
+		var dataCopy dataBase
+		cloningData(data, &dataCopy, *totalUser)
+		if ascending {
+			insertionSortDataString(&dataCopy, *totalUser, 9)
+		} else {
+			insertionSortDataStringDesc(&dataCopy, *totalUser, 9)
+		}
+		for i := 1; i < *totalUser; i++ {
+			if dataCopy[i].dataSudahDiisi {
+				fmt.Printf("User: %s with Serial Code: %s\n", dataCopy[i].user, dataCopy[i].serialCode)
+			}
+		}
+	}
+	footer()
+}
+
+// gah damn dikit lg co
 func searchUserStatus(data *dataBase, totalUser *int) {
 	var searchStatus string
 	// var input string
 	if *totalUser <= 1 {
 		fmt.Println("No user data available")
-	}else { 
-	fmt.Print("Input Status that you want to search:")
-	fmt.Scan(&searchStatus)
-	searchStatus = upperCaseConverter(searchStatus)
-	sequentialSearch(data, searchStatus, totalUser, 8)
+	} else {
+		fmt.Print("Input Status that you want to search (GUD / WARNING / CRITICAL / VERY_CRITICAL):")
+		fmt.Scan(&searchStatus)
+		searchStatus = upperCaseConverter(searchStatus)
+		sequentialSearch(data, searchStatus, totalUser, 8)
 	}
 }
 
 func searchUserCpuTemp(data *dataBase, totalUser *int) {
 	if *totalUser <= 1 {
 		fmt.Println("No user data available")
-	}else {
+	} else {
 		var batasKiri, batasKanan int
 		var input float64
-		selectionSort(data, *totalUser, 1)
 		fmt.Print("Input CPU that you want to search: ")
 		fmt.Scan(&input)
-		binarySearch(data, input, totalUser, 1, &batasKanan, &batasKiri)
-		if batasKiri == -1 && batasKanan == -1 {
+		var dataCopy dataBase
+		cloningData(data, &dataCopy, *totalUser)
+		binarySearch(&dataCopy, input, totalUser, 1, &batasKanan, &batasKiri)
+		if batasKiri == -1 || batasKanan == -1 {
 			fmt.Println("No user data found with that CPU Temperature")
 		} else {
 			fmt.Printf("Users with Average CPU Temperature of %.2f°C:\n", input)
 			for i := batasKiri + 1; i < batasKanan; i++ {
-				fmt.Printf("User %d: %s\n", i, data[i].user)
-				fmt.Printf("%-2sAverage CPU Temperature: %.2f°C\n", "", data[i].rataCpuTemp)
+				fmt.Printf("User: %s\n", dataCopy[i].user)
+				fmt.Printf("%-2sAverage CPU Temperature: %.2f°C\n", "", dataCopy[i].rataCpuTemp)
 			}
 		}
 	}
@@ -1360,7 +1538,7 @@ func showUserTempStats(data *dataBase, loggedInUser int) {
 
 func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	var exit bool = false
-	var input int
+	var input string
 	// buat admin
 	if loggedInUser == 0 {
 		if *totalUser <= 1 {
@@ -1371,27 +1549,30 @@ func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			footer()
 			fmt.Printf("%-34sInput User index you want to change\n", " ")
 			fmt.Printf("%-44sTotal User: %d\n", " ", *totalUser-1)
-			fmt.Printf("Type 0 to Exit\n")
-			fmt.Println()
+			fmt.Printf("Type Exit to go back\n")
+			footer()
 			fmt.Println("USERNAME: ")
 			for i := 1; i < *totalUser; i++ {
-				fmt.Printf("User %d: %s\n", i, data[i].user)
+				fmt.Printf("User: %s\n", data[i].user)
 			}
 			footer()
 			for !exit {
 				fmt.Print("Input: ")
 				fmt.Scan(&input)
-				if input > 0 && input < *totalUser {
-					if data[input].dataSudahDiisi {
-						changeDataUserLogic(data, input, kill, login)
+				if upperCaseConverter(input) == "EXIT" {
+					exit = true
+				}else {
+					userIndex := sequentialSearchIndex(data, input, totalUser)
+					if userIndex != -1 {
+						if data[userIndex].dataSudahDiisi {
+							changeDataUserLogic(data, userIndex, kill, login)
+						} else {
+							fmt.Println("No data available to change for this user")
+						}
+						exit = true
 					} else {
-						fmt.Println("No data available to change for this user")
+						fmt.Println("User not found")
 					}
-					exit = true
-				} else if input == 0 {
-					exit = true
-				} else {
-					fmt.Println("Invalid Input")
 				}
 			}
 		}
@@ -1448,6 +1629,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			}
 			data[loggedInUser].serialCode = newSerial
 			fmt.Println("Serial Code Changed")
+			exit = true
 
 		case 2:
 			var newManuf, newModel, newSerial string
@@ -1467,28 +1649,30 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].cpuSerial = newSerial
 			setData(data, loggedInUser)
 			fmt.Println("CPU Info updated.")
+			exit = true
 
 		case 3:
 			var newManuf, newModel, newSerial string
-	validGpuManuf := false
-	validGpuModel := false
-	for !validGpuManuf || !validGpuModel {
-		fmt.Print("GPU: ")
-		fmt.Scan(&newManuf)
-		validGpuManuf = checkValidityInput(newManuf, 4, "")
-		x := upperCaseConverter(newManuf)
-		if validGpuManuf && (x != "NONE") {
-			fmt.Scan(&newModel, &newSerial)
-			validGpuModel = checkValidityInput(newModel, 5, newManuf)
-		} else if validGpuManuf && (x == "NONE") {
-			validGpuModel = true
-		}
-	}
+			validGpuManuf := false
+			validGpuModel := false
+			for !validGpuManuf || !validGpuModel {
+				fmt.Print("GPU: ")
+				fmt.Scan(&newManuf)
+				validGpuManuf = checkValidityInput(newManuf, 4, "")
+				x := upperCaseConverter(newManuf)
+				if validGpuManuf && (x != "NONE") {
+					fmt.Scan(&newModel, &newSerial)
+					validGpuModel = checkValidityInput(newModel, 5, newManuf)
+				} else if validGpuManuf && (x == "NONE") {
+					validGpuModel = true
+				}
+			}
 			data[loggedInUser].gpuManufacturer = upperCaseConverter(newManuf)
 			data[loggedInUser].gpuModel = upperCaseConverter(newModel)
 			data[loggedInUser].gpuSerial = newSerial
 			setData(data, loggedInUser)
 			fmt.Println("GPU Info updated.")
+			exit = true
 
 		case 4:
 			var newCap float64
@@ -1504,6 +1688,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			}
 			data[loggedInUser].ramCapacity = newCap
 			fmt.Println("RAM Capacity updated.")
+			exit = true
 
 		case 5:
 			var newCap float64
@@ -1519,6 +1704,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			}
 			data[loggedInUser].diskCapacity = newCap
 			fmt.Println("Disk Capacity updated.")
+			exit = true
 
 		case 6:
 			var newTemps [10]float64
@@ -1535,6 +1721,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].maxCpuTemp = max
 			setData(data, loggedInUser)
 			fmt.Println("CPU Temperatures updated.")
+			exit = true
 
 		case 7:
 			if data[loggedInUser].gpuManufacturer == "NONE" {
@@ -1555,6 +1742,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 				setData(data, loggedInUser)
 				fmt.Println("GPU Temperatures updated.")
 			}
+			exit = true
 
 		case 8:
 			var newTemps [10]float64
@@ -1571,6 +1759,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].maxRamTemp = max
 			setData(data, loggedInUser)
 			fmt.Println("RAM Temperatures updated.")
+			exit = true
 
 		case 9:
 			var newUsage float64
@@ -1587,6 +1776,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].ramUsed = newUsage
 			setData(data, loggedInUser)
 			fmt.Println("RAM Usage updated.")
+			exit = true
 
 		case 10:
 			var newUsage float64
@@ -1603,6 +1793,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].diskUsed = newUsage
 			setData(data, loggedInUser)
 			fmt.Println("Disk Usage updated.")
+			exit = true
 
 		case 11:
 			var newOS string
@@ -1618,6 +1809,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].operatingSystem = upperCaseConverter(newOS)
 			setData(data, loggedInUser)
 			fmt.Println("Operating System updated.")
+			exit = true
 
 		case 12:
 			var newLoad string
@@ -1638,6 +1830,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			}
 			setData(data, loggedInUser)
 			fmt.Println("Load Status updated.")
+			exit = true
 
 		case 13:
 			var newDate string
@@ -1653,6 +1846,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			data[loggedInUser].lastMaintenanceDate = newDate
 			data[loggedInUser].nextMaintenanceDate = nextMaintenance(newDate, data[loggedInUser].status)
 			fmt.Println("Maintenance Date updated.")
+			exit = true
 
 		case 14:
 			if data[loggedInUser].usingLaptop {
@@ -1672,6 +1866,7 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			} else {
 				fmt.Println("Invalid Input")
 			}
+			exit = true
 		case 15:
 			exit = true
 		case 16:
@@ -1800,15 +1995,6 @@ func nextMaintenance(lastMaintenanceDate string, status string) string {
 	bulan := int(lastMaintenanceDate[3]-'0')*10 + int(lastMaintenanceDate[4]-'0')
 	tahun := int(lastMaintenanceDate[6]-'0')*1000 + int(lastMaintenanceDate[7]-'0')*100 + int(lastMaintenanceDate[8]-'0')*10 + int(lastMaintenanceDate[9]-'0')
 
-	if status == "VERY_CRITICAL" {
-		tanggal = tanggal + 1
-	} else if status == "CRITICAL" {
-		tanggal = tanggal + 7
-	} else if status == "WARNING" {
-		bulan = bulan + 3
-	} else if status == "GUD" {
-		bulan = bulan + 6
-	}
 	var tanggalDalamBulan int
 	if bulan == 1 || bulan == 3 || bulan == 5 || bulan == 7 || bulan == 8 || bulan == 10 || bulan == 12 {
 		tanggalDalamBulan = 31
@@ -1818,6 +2004,16 @@ func nextMaintenance(lastMaintenanceDate string, status string) string {
 		tanggalDalamBulan = 29
 	} else {
 		tanggalDalamBulan = 28
+	}
+
+	if status == "VERY_CRITICAL" {
+		tanggal = tanggal + 1
+	} else if status == "CRITICAL" {
+		tanggal = tanggal + 7
+	} else if status == "WARNING" {
+		bulan = bulan + 3
+	} else if status == "GUD" {
+		bulan = bulan + 6
 	}
 
 	if tanggal > tanggalDalamBulan {
@@ -1854,3 +2050,4 @@ func stringConverter(x int) string {
 	}
 	return hasil
 }
+
