@@ -1,4 +1,4 @@
-package main 
+package main
 
 import "fmt"
 
@@ -96,7 +96,6 @@ func loginPage(data *dataBase, userIndex *int, login *bool, loggedInUser *int) {
 	}
 }
 
-
 func mainMenu(data *dataBase, kill *bool, login *bool, totalUser *int, firstOpenPage *bool, loggedInUser int) {
 	var exit bool = false
 	var input int
@@ -190,7 +189,6 @@ func mainMenu(data *dataBase, kill *bool, login *bool, totalUser *int, firstOpen
 		}
 	}
 }
-
 
 func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	var valid1 bool = false
@@ -468,16 +466,14 @@ func jenisSorting() bool {
 	return ascending
 }
 
-
-
 func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	var exit bool = false
 	var input int
 
-	fmt.Printf("%45s", "DELETE PAGE\n")
 	if loggedInUser == 0 {
 		deleteDataMenuAdministrator(data, kill, login, totalUser)
 	} else {
+		fmt.Printf("%45s", "DELETE PAGE\n")
 		fmt.Printf("%-42s%s\n%-42s%s\n%-42s%s\n%-42s%s\n", " ", "1. Delete My Data", " ", "2. Exit", " ", "3. Logout", " ", "4. Kill Program")
 		for !exit {
 			footer()
@@ -677,7 +673,6 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 	}
 }
 
-
 func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	var exit bool = false
 	var input int
@@ -685,17 +680,17 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 	fmt.Printf("\n%-44s%s\n\n", "", "STATISTIC MENU")
 	if loggedInUser == 0 {
 		for !exit {
-		fmt.Printf("%-33s%s\n", " ", "1. Show component status (all users)")
-		fmt.Printf("%-33s%s\n", " ", "2. Show temperature statistics (all users)")
-		fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code")
-		fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")  //selection Sort
-		fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")  //selection Sort
-		fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
-		fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
-		fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
-		fmt.Printf("%-33s%s\n", " ", "9. Exit")
-		fmt.Printf("%-33s%s\n", " ", "10. Logout")
-		fmt.Printf("%-33s%s\n", " ", "11. Kill Program")
+			fmt.Printf("%-33s%s\n", " ", "1. Show component status (all users)")
+			fmt.Printf("%-33s%s\n", " ", "2. Show temperature statistics (all users)")
+			fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code")
+			fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")  //selection Sort
+			fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")  //selection Sort
+			fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
+			fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
+			fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
+			fmt.Printf("%-33s%s\n", " ", "9. Exit")
+			fmt.Printf("%-33s%s\n", " ", "10. Logout")
+			fmt.Printf("%-33s%s\n", " ", "11. Kill Program")
 			footer()
 			fmt.Print("Input: ")
 			fmt.Scan(&input)
@@ -740,7 +735,8 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			fmt.Scan(&input)
 			switch input {
 			case 1:
-				showUserStatus(data, totalUser)
+				fmt.Printf("\nUser %s\n", data[loggedInUser].user)
+				fmt.Printf("%-2sStatus: %s\n", " ", data[loggedInUser].status)
 			case 2:
 				showUserTempStats(data, loggedInUser)
 			case 3:
@@ -757,7 +753,6 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		}
 	}
 }
-
 
 func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	var exit bool = false
@@ -784,7 +779,7 @@ func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				fmt.Scan(&input)
 				if upperCaseConverter(input) == "EXIT" {
 					exit = true
-				}else {
+				} else {
 					userIndex := sequentialSearchIndex(data, input, totalUser)
 					if userIndex != -1 {
 						if data[userIndex].dataSudahDiisi {
@@ -808,3 +803,4 @@ func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		}
 	}
 }
+
