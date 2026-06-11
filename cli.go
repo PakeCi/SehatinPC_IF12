@@ -43,12 +43,16 @@ func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%-25s %s %.2f°C\n", "Average CPU Temperature", ":", data[i].rataCpuTemp)
 	fmt.Printf("%-25s %s %.2f°C\n", "Median CPU Temperature", ":", data[i].medCpuTemp)
 	fmt.Printf("%-25s %s %.2f°C\n", "Modus CPU Temperature", ":", data[i].modCpuTemp)
+	fmt.Printf("%-25s %s %.2f°C\n", "Min CPU Temperature", ":", data[i].minCpuTemp)
+	fmt.Printf("%-25s %s %.2f°C\n", "Max CPU Temperature", ":", data[i].maxCpuTemp)
 
 	if data[i].gpuManufacturer != "NONE" {
 		fmt.Printf("\nGPU SPEC: \n")
 		fmt.Printf("%-25s %s %.2f°C\n", "Average GPU Temperature", ":", data[i].rataGpuTemp)
 		fmt.Printf("%-25s %s %.2f°C\n", "Median GPU Temperature", ":", data[i].medGpuTemp)
 		fmt.Printf("%-25s %s %.2f°C\n", "Modus GPU Temperature", ":", data[i].modGpuTemp)
+		fmt.Printf("%-25s %s %.2f°C\n", "Min GPU Temperature", ":", data[i].minGpuTemp)
+		fmt.Printf("%-25s %s %.2f°C\n", "Max GPU Temperature", ":", data[i].maxGpuTemp)
 	}
 
 	fmt.Printf("\nRAM SPEC: \n")
@@ -57,6 +61,8 @@ func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%-25s %s %.2f°C\n", "Average RAM Temperature", ":", data[i].rataRamTemp)
 	fmt.Printf("%-25s %s %.2f°C\n", "Median RAM Temperature", ":", data[i].medRamTemp)
 	fmt.Printf("%-25s %s %.2f°C\n", "Modus RAM Temperature", ":", data[i].modRamTemp)
+	fmt.Printf("%-25s %s %.2f°C\n", "Min RAM Temperature", ":", data[i].minRamTemp)
+	fmt.Printf("%-25s %s %.2f°C\n", "Max RAM Temperature", ":", data[i].maxRamTemp)
 
 	fmt.Printf("\nDISK SPEC: \n")
 	fmt.Printf("%-25s %s %.2f GiB\n", "Disk Capacity", ":", data[i].diskCapacity)
@@ -67,7 +73,9 @@ func outputDataUserFormat(data *dataBase, i int) {
 	fmt.Printf("%-25s %s %v\n", "Last Maintenance Date", ":", data[i].lastMaintenanceDate)
 	fmt.Printf("%-25s %s %v\n", "Next Maintenance Date", ":", data[i].nextMaintenanceDate)
 	fmt.Printf("%-25s %s %v\n", "User Status", ":", data[i].status)
+	fmt.Printf("%-25s %s %d\n", "Jumlah Komponen Rusak", ":", data[i].jumlahKomponenRusak)
 	footer()
+
 }
 
 

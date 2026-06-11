@@ -191,8 +191,8 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 		fmt.Printf("%-40s%s\n", " ", "14. Battery Health")
 	}
 	fmt.Printf("%-40s%s\n", " ", "15. Exit")
-	fmt.Printf("%-40s%s\n", " ", "16. Logout")
-	fmt.Printf("%-40s%s\n", " ", "17. Kill Program")
+	// fmt.Printf("%-40s%s\n", " ", "16. Logout")
+	// fmt.Printf("%-40s%s\n", " ", "17. Kill Program")
 	footer()
 	for !exit {
 		fmt.Print("Input: ")
@@ -452,12 +452,12 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 			exit = true
 		case 15:
 			exit = true
-		case 16:
-			exit = true
-			*login = false
-		case 17:
-			exit = true
-			*kill = true
+		// case 16:
+		// 	exit = true
+		// 	*login = false
+		// case 17:
+		// 	exit = true
+		// 	*kill = true
 		default:
 			fmt.Println("Invalid Input")
 		}
@@ -469,6 +469,7 @@ func setData(data *dataBase, loggedInUser int) {
 	var gpuOverheat bool = false
 	var ramOverheat bool = false
 	var sisaAvailableRam, sisaAvailableDisk float64
+	var jumlahKomponen int = 0  
 
 	// nextMaintenance := data[loggedInUser].lastMaintenanceDate
 	if data[loggedInUser].cpuManufacturer == "INTEL" {
@@ -508,7 +509,6 @@ func setData(data *dataBase, loggedInUser int) {
 			cpuOverheat = true
 		}
 	}
-
 	if data[loggedInUser].gpuManufacturer != "NONE" {
 		if data[loggedInUser].gpuManufacturer == "NVIDIA" {
 			if (data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 85) || (!data[loggedInUser].dataLoad && data[loggedInUser].rataGpuTemp >= 70) {
@@ -556,6 +556,23 @@ func setData(data *dataBase, loggedInUser int) {
 
 	lowOnRam = sisaAvailableRam < minimumRamAvailable
 	lowOnDisk = sisaAvailableDisk < minimumDiskAvailable
+
+	if cpuOverheat {
+		jumlahKomponen++
+	}
+	if gpuOverheat {
+		jumlahKomponen++
+	}
+	if ramOverheat {
+		jumlahKomponen++
+	}
+	if lowOnDisk {
+		jumlahKomponen++
+	}
+	if lowOnRam {
+		jumlahKomponen++
+	}
+	data[loggedInUser].jumlahKomponenRusak = jumlahKomponen
 
 	if cpuOverheat && gpuOverheat && ramOverheat {
 		data[loggedInUser].status = "VERY_CRITICAL"

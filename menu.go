@@ -41,7 +41,7 @@ func registerPage(data *dataBase, userIndex *int) {
 		footer()
 		fmt.Print("Username : ")
 		fmt.Scan(&username)
-		if username == "Exit" {
+		if upperCaseConverter(username) == "EXIT" {
 			valid = true
 		} else {
 			valid = checkValidityUser(data, username, *userIndex)
@@ -80,7 +80,7 @@ func loginPage(data *dataBase, userIndex *int, login *bool, loggedInUser *int) {
 		footer()
 		fmt.Print("Input Your Username : ")
 		fmt.Scan(&username)
-		if username == "Exit" {
+		if upperCaseConverter(username) == "EXIT" {
 			valid = true
 		} else {
 			fmt.Print("Input Your Password : ")
@@ -99,6 +99,7 @@ func loginPage(data *dataBase, userIndex *int, login *bool, loggedInUser *int) {
 func mainMenu(data *dataBase, kill *bool, login *bool, totalUser *int, firstOpenPage *bool, loggedInUser int) {
 	var exit bool = false
 	var input int
+		
 
 	if *firstOpenPage {
 		header()
@@ -378,7 +379,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	}
 	valid2 = false
 	footer()
-	fmt.Println("Type (1) to Save, Type (2) to Exit Menu, Type (3) to Logout, Type (4) to Kill Program")
+	fmt.Println("Type (1) to Save, Type (2) to Exit Menu")
 	footer()
 	var input int
 	for !valid2 {
@@ -435,12 +436,12 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			valid2 = true
 		case 2:
 			valid2 = true
-		case 3:
-			*login = false
-			valid2 = true
-		case 4:
-			*kill = true
-			valid2 = true
+		// case 3:
+		// 	*login = false
+		// 	valid2 = true
+		// case 4:
+		// 	*kill = true
+		// 	valid2 = true
 		default:
 			fmt.Println("Invalid Input")
 		}
@@ -474,7 +475,7 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		deleteDataMenuAdministrator(data, kill, login, totalUser)
 	} else {
 		fmt.Printf("%45s", "DELETE PAGE\n")
-		fmt.Printf("%-42s%s\n%-42s%s\n%-42s%s\n%-42s%s\n", " ", "1. Delete My Data", " ", "2. Exit", " ", "3. Logout", " ", "4. Kill Program")
+		fmt.Printf("%-42s%s\n%-42s%s\n", " ", "1. Delete My Data", " ", "2. Exit")
 		for !exit {
 			footer()
 			fmt.Print("Input: ")
@@ -492,12 +493,12 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				}
 			case 2: //exit
 				exit = true
-			case 3: //logout
-				*login = false
-				exit = true
-			case 4: //kill
-				*kill = true
-				exit = true
+			// case 3: //logout
+			// 	*login = false
+			// 	exit = true
+			// case 4: //kill
+			// 	*kill = true
+			// 	exit = true
 			default:
 				fmt.Println("Invalid Input")
 				footer()
@@ -520,7 +521,7 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 	fmt.Printf("%-33s%s\n", " ", "2. Delete User PC Data")
 	fmt.Printf("%-33s%s\n", " ", "3. Delete User Account")
 	fmt.Printf("%-33s%s\n", " ", "4. Exit")
-	fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
+	// fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
 
 	for !exit {
 		footer()
@@ -561,8 +562,8 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 				fmt.Printf("%-33s%s\n", " ", "27. User Status")
 				fmt.Printf("%-33s%s\n", " ", "28. Serial Code")
 				fmt.Printf("%-33s%s\n", " ", "29. Exit")
-				fmt.Printf("%-33s%s\n", " ", "30. Logout")
-				fmt.Printf("%-33s%s\n", " ", "31. Kill Program")
+				// fmt.Printf("%-33s%s\n", " ", "30. Logout")
+				// fmt.Printf("%-33s%s\n", " ", "31. Kill Program")
 
 				valid = false
 				for !valid {
@@ -576,12 +577,12 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 				}
 				if searchType == 29 {
 					exit = true
-				} else if searchType == 30 {
-					*login = false
-					exit = true
-				} else if searchType == 31 {
-					*kill = true
-					exit = true
+				// } else if searchType == 30 {
+				// 	*login = false
+				// 	exit = true
+				// } else if searchType == 31 {
+				// 	*kill = true
+				// 	exit = true
 				} else if searchType >= 1 && searchType <= 19 {
 					fmt.Print("Data: ")
 					fmt.Scan(&searchDataF)
@@ -596,7 +597,7 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 							fmt.Printf("User: %s with data: %.2f\n", copyData[i].user, copyData[i].indexFloat(searchType))
 						}
 					}
-				} else {
+				} else if searchType >= 20 && searchType <= 28 {
 					fmt.Print("Data:")
 					fmt.Scan(&searchDataS)
 					sequentialSearch(data, searchDataS, totalUser, searchType-19)
@@ -663,9 +664,9 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 			exit = true
 		case 4: //exit
 			exit = true
-		case 5: //kill
-			exit = true
-			*kill = true
+		// case 5: //kill
+		// 	exit = true
+		// 	*kill = true
 		default:
 			fmt.Println("Invalid Input")
 			footer()
@@ -688,9 +689,10 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
 			fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
 			fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
-			fmt.Printf("%-33s%s\n", " ", "9. Exit")
-			fmt.Printf("%-33s%s\n", " ", "10. Logout")
-			fmt.Printf("%-33s%s\n", " ", "11. Kill Program")
+			fmt.Printf("%-33s%s\n", " ", "9. Search user by SerialCode") //binary search
+			fmt.Printf("%-33s%s\n", " ", "10. Exit")
+			// fmt.Printf("%-33s%s\n", " ", "11. Logout")
+			// fmt.Printf("%-33s%s\n", " ", "12. Kill Program")
 			footer()
 			fmt.Print("Input: ")
 			fmt.Scan(&input)
@@ -712,13 +714,15 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			case 8:
 				searchUserCpuTemp(data, totalUser)
 			case 9:
-				exit = true
+				searchUserSerialCode(data, totalUser)
 			case 10:
-				*login = false
 				exit = true
-			case 11:
-				*kill = true
-				exit = true
+			// case 11:
+			// 	*login = false
+			// 	exit = true
+			// case 12:
+			// 	*kill = true
+			// 	exit = true
 			default:
 				fmt.Println("Invalid Input")
 			}
@@ -727,8 +731,8 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		fmt.Printf("%-33s%s\n", " ", "1. Show my status")
 		fmt.Printf("%-33s%s\n", " ", "2. Show my temperature statistics")
 		fmt.Printf("%-33s%s\n", " ", "3. Exit")
-		fmt.Printf("%-33s%s\n", " ", "4. Logout")
-		fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
+		// fmt.Printf("%-33s%s\n", " ", "4. Logout")
+		// fmt.Printf("%-33s%s\n", " ", "5. Kill Program")
 		for !exit {
 			footer()
 			fmt.Print("Input: ")
@@ -741,12 +745,12 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				showUserTempStats(data, loggedInUser)
 			case 3:
 				exit = true
-			case 4:
-				*login = false
-				exit = true
-			case 5:
-				*kill = true
-				exit = true
+			// case 4:
+			// 	*login = false
+			// 	exit = true
+			// case 5:
+			// 	*kill = true
+			// 	exit = true
 			default:
 				fmt.Println("Invalid Input")
 			}

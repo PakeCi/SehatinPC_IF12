@@ -84,11 +84,22 @@ func searchUserCpuTemp(data *dataBase, totalUser *int) {
 			fmt.Println("No user data found with that CPU Temperature")
 		} else {
 			fmt.Printf("Users with Average CPU Temperature of %.2f°C:\n", input)
-			for i := batasKiri + 1; i < batasKanan; i++ {
+			for i := batasKiri; i <= batasKanan; i++ {
 				fmt.Printf("User: %s\n", dataCopy[i].user)
 				fmt.Printf("%-2sAverage CPU Temperature: %.2f°C\n", "", dataCopy[i].rataCpuTemp)
 			}
 		}
 	}
 	footer()
+}
+
+func searchUserSerialCode(data *dataBase, totalUser *int) {
+	if *totalUser <= 1 {
+		fmt.Println("No user data available")
+	} else {
+		fmt.Print("Input Serial Code that you want to search: ")
+		var searchSerialCode string
+		fmt.Scan(&searchSerialCode)
+		sequentialSearch(data, searchSerialCode, totalUser, 9)
+	}
 }

@@ -17,6 +17,7 @@ type dataComponent struct {
 	lastMaintenanceDate, nextMaintenanceDate                               string  // Format DD-MM-YYYY
 	status                                                                 string  // Gud, Warning, Critical
 	usingLaptop                                                            bool
+	jumlahKomponenRusak int
 }
 
 // Intel Data : https://www.intel.com/content/www/us/en/products/details/processors.html

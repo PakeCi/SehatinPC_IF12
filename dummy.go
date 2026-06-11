@@ -234,9 +234,9 @@ func seedDummyData(data *dataBase, userIndex *int) {
 	data[i].operatingSystem = "LINUX"
 	data[i].dataLoad = true
 	data[i].lastMaintenanceDate = "18-07-2025"
-	cpuT = [10]float64{96, 97, 96, 98, 96, 97, 96, 97, 96, 98}  // rata >95 → overheat
-	gpuT = [10]float64{87, 88, 87, 89, 87, 88, 87, 88, 87, 89}  // rata >85 → overheat
-	ramT = [10]float64{87, 88, 87, 89, 87, 88, 87, 88, 87, 89}  // rata >85 → overheat
+	cpuT = [10]float64{96, 97, 96, 98, 96, 97, 96, 97, 96, 98} // rata >95 → overheat
+	gpuT = [10]float64{87, 88, 87, 89, 87, 88, 87, 88, 87, 89} // rata >85 → overheat
+	ramT = [10]float64{87, 88, 87, 89, 87, 88, 87, 88, 87, 89} // rata >85 → overheat
 	data[i].rataCpuTemp, data[i].medCpuTemp, data[i].modCpuTemp, data[i].minCpuTemp, data[i].maxCpuTemp = calcStats(cpuT)
 	data[i].rataGpuTemp, data[i].medGpuTemp, data[i].modGpuTemp, data[i].minGpuTemp, data[i].maxGpuTemp = calcStats(gpuT)
 	data[i].rataRamTemp, data[i].medRamTemp, data[i].modRamTemp, data[i].minRamTemp, data[i].maxRamTemp = calcStats(ramT)
@@ -725,9 +725,9 @@ func seedDummyData(data *dataBase, userIndex *int) {
 	data[i].operatingSystem = "WINDOWS"
 	data[i].dataLoad = true
 	data[i].lastMaintenanceDate = "11-10-2024"
-	cpuT = [10]float64{96, 97, 96, 98, 96, 97, 96, 97, 96, 98}  // rata >95 → overheat
-	gpuT = [10]float64{86, 87, 86, 88, 86, 87, 86, 87, 86, 88}  // rata >85 → overheat
-	ramT = [10]float64{86, 87, 86, 88, 86, 87, 86, 87, 86, 88}  // rata >85 → overheat
+	cpuT = [10]float64{96, 97, 96, 98, 96, 97, 96, 97, 96, 98} // rata >95 → overheat
+	gpuT = [10]float64{86, 87, 86, 88, 86, 87, 86, 87, 86, 88} // rata >85 → overheat
+	ramT = [10]float64{86, 87, 86, 88, 86, 87, 86, 87, 86, 88} // rata >85 → overheat
 	data[i].rataCpuTemp, data[i].medCpuTemp, data[i].modCpuTemp, data[i].minCpuTemp, data[i].maxCpuTemp = calcStats(cpuT)
 	data[i].rataGpuTemp, data[i].medGpuTemp, data[i].modGpuTemp, data[i].minGpuTemp, data[i].maxGpuTemp = calcStats(gpuT)
 	data[i].rataRamTemp, data[i].medRamTemp, data[i].modRamTemp, data[i].minRamTemp, data[i].maxRamTemp = calcStats(ramT)
