@@ -1,4 +1,4 @@
-package main 
+package main
 
 import "fmt"
 
@@ -35,7 +35,6 @@ func binarySearch(data *dataBase, searchData float64, totalUser *int, id int, ba
 		}
 	}
 }
-
 
 func sequentialSearch(data *dataBase, searchData string, totalUser *int, id int) {
 	//buat cari status atau yang lainnya berdasarkan string
@@ -103,3 +102,4 @@ func searchUserSerialCode(data *dataBase, totalUser *int) {
 		sequentialSearch(data, searchSerialCode, totalUser, 9)
 	}
 }
+

@@ -1,4 +1,4 @@
-package main 
+package main
 
 func insertionSortAsc(data *[10]float64) {
 	var idx int
@@ -106,3 +106,4 @@ func insertionSortDataStringDesc(data *dataBase, totalUser, id int) {
 		data[idx] = temp
 	}
 }
+

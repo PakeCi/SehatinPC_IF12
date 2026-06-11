@@ -1,4 +1,4 @@
-package main 
+package main
 
 import "fmt"
 
@@ -166,8 +166,6 @@ func (x dataComponent) indexString(idx int) string {
 		return ""
 	}
 }
-
-
 
 func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 	var exit bool = false
@@ -475,7 +473,7 @@ func setData(data *dataBase, loggedInUser int) {
 	var gpuOverheat bool = false
 	var ramOverheat bool = false
 	var sisaAvailableRam, sisaAvailableDisk float64
-	var jumlahKomponen int = 0  
+	var jumlahKomponen int = 0
 
 	// nextMaintenance := data[loggedInUser].lastMaintenanceDate
 	if data[loggedInUser].cpuManufacturer == "INTEL" {
@@ -656,3 +654,4 @@ func stringConverter(x int) string {
 	}
 	return hasil
 }
+

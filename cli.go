@@ -1,4 +1,4 @@
-package main 
+package main
 
 import "fmt"
 
@@ -78,7 +78,6 @@ func outputDataUserFormat(data *dataBase, i int) {
 
 }
 
-
 func showDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, totalUser *int) {
 	if loggedInUser == 0 {
 		if *totalUser <= 1 {
@@ -132,7 +131,6 @@ func showUserStatus(data *dataBase, totalUser *int) {
 	fmt.Printf("%-20s: %d\n", "None", countNone)
 }
 
-
 func showAverageTemp(data *dataBase, totalUser *int) {
 	var countCpu, countGpu, countRam int
 	var totalCpuTemp, totalGpuTemp, totalRamTemp float64
@@ -166,7 +164,6 @@ func showAverageTemp(data *dataBase, totalUser *int) {
 	}
 	footer()
 }
-
 
 func showSortedCpuTemp(data *dataBase, totalUser *int) {
 	if *totalUser <= 1 {

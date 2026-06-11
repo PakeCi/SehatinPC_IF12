@@ -99,7 +99,6 @@ func loginPage(data *dataBase, userIndex *int, login *bool, loggedInUser *int) {
 func mainMenu(data *dataBase, kill *bool, login *bool, totalUser *int, firstOpenPage *bool, loggedInUser int) {
 	var exit bool = false
 	var input int
-		
 
 	if *firstOpenPage {
 		header()
@@ -273,7 +272,7 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 			}
 		} else if validGpuManuf && (x == "NONE") {
 			validGpuModel = true
-		} 
+		}
 		if !validGpuManuf {
 			fmt.Println("Invalid Manufacturer Input")
 		}
@@ -496,9 +495,9 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				if upperCaseConverter(confirmation) == "YES" {
 					deletion(data, loggedInUser, totalUser, 1)
 					exit = true
-				}else if upperCaseConverter(confirmation) == "NO" {
-					exit = false;
-				}else {
+				} else if upperCaseConverter(confirmation) == "NO" {
+					exit = false
+				} else {
 					fmt.Println("Invalid Input")
 				}
 			case 2: //exit
@@ -587,12 +586,12 @@ func deleteDataMenuAdministrator(data *dataBase, kill *bool, login *bool, totalU
 				}
 				if searchType == 29 {
 					exit = true
-				// } else if searchType == 30 {
-				// 	*login = false
-				// 	exit = true
-				// } else if searchType == 31 {
-				// 	*kill = true
-				// 	exit = true
+					// } else if searchType == 30 {
+					// 	*login = false
+					// 	exit = true
+					// } else if searchType == 31 {
+					// 	*kill = true
+					// 	exit = true
 				} else if searchType >= 1 && searchType <= 19 {
 					fmt.Print("Data: ")
 					fmt.Scan(&searchDataF)
@@ -694,11 +693,11 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 			fmt.Printf("%-33s%s\n", " ", "1. Show component status (all users)")
 			fmt.Printf("%-33s%s\n", " ", "2. Show temperature statistics (all users)")
 			fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code") //selection Sort
-			fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")  //selection Sort
-			fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")  //selection Sort
-			fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
-			fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
-			fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
+			fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")    //selection Sort
+			fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")    //selection Sort
+			fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")    //Insertion sort
+			fmt.Printf("%-33s%s\n", " ", "7. Search user by status")     //sequential search
+			fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp")   //binary search
 			fmt.Printf("%-33s%s\n", " ", "9. Search user by SerialCode") //sequential search
 			fmt.Printf("%-33s%s\n", " ", "10. Exit")
 			// fmt.Printf("%-33s%s\n", " ", "11. Logout")
@@ -817,4 +816,3 @@ func changeDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		}
 	}
 }
-

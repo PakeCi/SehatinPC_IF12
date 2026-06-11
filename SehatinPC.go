@@ -1,6 +1,5 @@
 package main
 
-
 func main() {
 	var data dataBase
 	var exit bool = false
@@ -28,7 +27,3 @@ func main() {
 		}
 	}
 }
-
-
-
-
