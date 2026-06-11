@@ -268,8 +268,14 @@ func inputDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool) {
 		if validGpuManuf && (x != "NONE") {
 			fmt.Scan(&gpuModel, &gpuSerial)
 			validGpuModel = checkValidityInput(gpuModel, 5, gpuManufacturer)
+			if !validGpuModel {
+				fmt.Println("Invalid GPU Model Input")
+			}
 		} else if validGpuManuf && (x == "NONE") {
 			validGpuModel = true
+		} 
+		if !validGpuManuf {
+			fmt.Println("Invalid Manufacturer Input")
 		}
 	}
 	valid1 = false
@@ -490,6 +496,10 @@ func deleteDataUser(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 				if upperCaseConverter(confirmation) == "YES" {
 					deletion(data, loggedInUser, totalUser, 1)
 					exit = true
+				}else if upperCaseConverter(confirmation) == "NO" {
+					exit = false;
+				}else {
+					fmt.Println("Invalid Input")
 				}
 			case 2: //exit
 				exit = true
@@ -683,13 +693,13 @@ func statisticsMenu(data *dataBase, loggedInUser int, kill *bool, login *bool, t
 		for !exit {
 			fmt.Printf("%-33s%s\n", " ", "1. Show component status (all users)")
 			fmt.Printf("%-33s%s\n", " ", "2. Show temperature statistics (all users)")
-			fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code")
+			fmt.Printf("%-33s%s\n", " ", "3. Sort users by serial code") //selection Sort
 			fmt.Printf("%-33s%s\n", " ", "4. Sort users by CPU temp")  //selection Sort
 			fmt.Printf("%-33s%s\n", " ", "5. Sort users by GPU temp")  //selection Sort
 			fmt.Printf("%-33s%s\n", " ", "6. Sort users by RAM temp")  //Insertion sort
 			fmt.Printf("%-33s%s\n", " ", "7. Search user by status")   //sequential search
 			fmt.Printf("%-33s%s\n", " ", "8. Search user by CPU temp") //binary search
-			fmt.Printf("%-33s%s\n", " ", "9. Search user by SerialCode") //binary search
+			fmt.Printf("%-33s%s\n", " ", "9. Search user by SerialCode") //sequential search
 			fmt.Printf("%-33s%s\n", " ", "10. Exit")
 			// fmt.Printf("%-33s%s\n", " ", "11. Logout")
 			// fmt.Printf("%-33s%s\n", " ", "12. Kill Program")

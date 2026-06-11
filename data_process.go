@@ -246,8 +246,14 @@ func changeDataUserLogic(data *dataBase, loggedInUser int, kill *bool, login *bo
 				if validGpuManuf && (x != "NONE") {
 					fmt.Scan(&newModel, &newSerial)
 					validGpuModel = checkValidityInput(newModel, 5, newManuf)
+					if !validGpuModel {
+						fmt.Println("Invalid GPU Model Input")
+					}
 				} else if validGpuManuf && (x == "NONE") {
 					validGpuModel = true
+				}
+				if !validGpuManuf {
+					fmt.Println("Invalid Manufacturer Input")
 				}
 			}
 			data[loggedInUser].gpuManufacturer = upperCaseConverter(newManuf)
